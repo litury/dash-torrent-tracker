@@ -10,7 +10,7 @@
   "dependencies": {
     "@react-router/node": "^7.6.3",
     "@scure/base": "^1.2.4",
-    "dash-platform-sdk": "^1.1.1",
+    "dash-platform-sdk": "^1.2.0",
     "isbot": "^5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

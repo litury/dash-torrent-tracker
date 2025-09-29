@@ -46,7 +46,7 @@ export default function CreateTorrent ({walletInfo}) {
       }
 
       const document = await sdk.documents.create(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, data, walletInfo.currentIdentity, identityContractNonce + 1n)
-      const stateTransition = await sdk.documents.createStateTransition(document, 0,identityContractNonce + 1n)
+      const stateTransition = await sdk.documents.createStateTransition(document, 0,{identityContractNonce: identityContractNonce + 1n})
 
       await dashPlatformExtension.signer.signAndBroadcast(stateTransition)
 

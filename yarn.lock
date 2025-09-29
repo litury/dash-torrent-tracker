@@ -1090,10 +1090,10 @@ cross-spawn@^7.0.6:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-dash-platform-sdk@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/dash-platform-sdk/-/dash-platform-sdk-1.1.1.tgz#1476a12055432f291fca02ab261f1af3660852ad"
-  integrity sha512-LW7GMC/B3sJDmJ62H4ccI/MN5VJR6QTB8GHy36WOf0V7CqH086xN/n8BxF1oVlczykMGz/McCtuuIY4wUYF4KQ==
+dash-platform-sdk@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/dash-platform-sdk/-/dash-platform-sdk-1.2.0.tgz#ee7aaea3d6d6f04cd57a28be4109be630fccb1cb"
+  integrity sha512-h89qpZcnpiHNwQ4k/9ujF/3k5FDPVtCQ/VJdU6eae9gDUtdLcIBeDQJJlndmIePFQYCPqCF0GalSaJocf9IJKw==
   dependencies:
     "@bufbuild/protobuf" "^2.6.0"
     "@dashincubator/secp256k1" "^1.7.1-5"
@@ -1106,9 +1106,9 @@ dash-platform-sdk@^1.1.1:
     grpc-web "^1.5.0"
     hash.js "^1.1.7"
     nice-grpc-web "^3.3.6"
-    pshenmic-dpp "1.0.12"
+    pshenmic-dpp "1.0.23-rc.7"
     rfc4648 "^1.5.4"
-    wasm-drive-verify "github:owl352/wasm-drive-verify#fe2a9406609ee2a9d42a6b4be7214395bd164155"
+    wasm-drive-verify "github:owl352/wasm-drive-verify#9c572d86992d205d994cd7e0630a4bd14d284f8a"
 
 dashhd@^3.3.3:
   version "3.3.3"
@@ -1947,10 +1947,10 @@ proxy-addr@~2.0.7:
     forwarded "0.2.0"
     ipaddr.js "1.9.1"
 
-pshenmic-dpp@1.0.12:
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.12.tgz#189fec14bf1fd52f2ac811073206c9ea28e36e38"
-  integrity sha512-0bLwawTEea8yalyMVnjEyDAD3x3Gph7IF2McLT1K6zPg7rK+Pj8psBlTe0qBMr/NX36raMERg9xrp86T0c98yw==
+pshenmic-dpp@1.0.23-rc.7:
+  version "1.0.23-rc.7"
+  resolved "https://registry.yarnpkg.com/pshenmic-dpp/-/pshenmic-dpp-1.0.23-rc.7.tgz#4a4d0025e69fc8fb78978b34be219e6c688d6691"
+  integrity sha512-I+cqkDgfCgi2rR6Yjn6QFRYvJtvCX+jtOQ5/ASDYnm3rkRjy6NK31lo7Np+AcOFpLIOjJyy3PoVU579UhQTCjg==
 
 qs@6.13.0:
   version "6.13.0"
@@ -2385,9 +2385,9 @@ vite-node@^3.2.2:
   optionalDependencies:
     fsevents "~2.3.3"
 
-"wasm-drive-verify@github:owl352/wasm-drive-verify#fe2a9406609ee2a9d42a6b4be7214395bd164155":
-  version "1.8.0"
-  resolved "https://codeload.github.com/owl352/wasm-drive-verify/tar.gz/fe2a9406609ee2a9d42a6b4be7214395bd164155"
+"wasm-drive-verify@github:owl352/wasm-drive-verify#9c572d86992d205d994cd7e0630a4bd14d284f8a":
+  version "2.0.1"
+  resolved "https://codeload.github.com/owl352/wasm-drive-verify/tar.gz/9c572d86992d205d994cd7e0630a4bd14d284f8a"
 
 which@^2.0.1:
   version "2.0.2"
