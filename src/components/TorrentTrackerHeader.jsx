@@ -1,8 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import ConnectWallet from './ConnectWallet.jsx'
-import dashLogo from '/dash_logo.png'
+import dashLogo from '../assets/dash_logo.png'
+import { NETWORK } from '../constants.js'
 
 export default function TorrentTrackerHeader ({ walletInfo, setWalletInfo }) {
+  const isTestnet = NETWORK === 'testnet'
+
   return (
     <div className="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -10,8 +13,17 @@ export default function TorrentTrackerHeader ({ walletInfo, setWalletInfo }) {
           <NavLink to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <img className="h-10" src={dashLogo} alt="Dash" />
             <div>
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white">Dash Torrent Tracker</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Decentralized on testnet</p>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Dash Torrent Tracker</h1>
+                <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${
+                  isTestnet
+                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                }`}>
+                  {isTestnet ? 'testnet' : 'mainnet'}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Decentralized torrent tracker</p>
             </div>
           </NavLink>
           <ConnectWallet walletInfo={walletInfo} setWalletInfo={setWalletInfo} />

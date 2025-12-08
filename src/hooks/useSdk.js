@@ -1,15 +1,11 @@
 import {DashPlatformSDK} from 'dash-platform-sdk/bundle.min.js'
+import { NETWORK } from '../constants.js'
 
 let dashPlatformSDK
 
 export const useSdk = () => {
-
-  if (window.dashPlatformSDK) {
-    return window.dashPlatformSDK
-  }
-
   if (!dashPlatformSDK) {
-    dashPlatformSDK = new DashPlatformSDK()
+    dashPlatformSDK = new DashPlatformSDK({network: NETWORK})
   }
 
   return dashPlatformSDK
