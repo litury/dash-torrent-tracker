@@ -3,9 +3,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'path'
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   plugins: [react(), tailwindcss()],
-  base: mode === 'production' ? '/dash-torrent-tracker/' : '/',
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
