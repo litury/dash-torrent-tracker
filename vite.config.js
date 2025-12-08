@@ -1,8 +1,8 @@
-import { reactRouter } from "@react-router/dev/vite";
-import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig({
-  interop: "auto",
-  plugins: [reactRouter(), tailwindcss()]
-});
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tailwindcss()],
+  base: mode === 'production' ? '/dash-torrent-tracker/' : '/'
+}))
