@@ -3,9 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Outlet, useOutletContext } from 'react-router-dom'
 import './index.css'
 
-import { Header } from '@shared/components/Header'
-import { TorrentList, CreateTorrent } from '@modules/torrent'
-import { INITIAL_WALLET_INFO, type WalletInfo } from '@modules/wallet'
+import { Header } from './shared/components/Header'
+import { TorrentList, CreateTorrent } from './modules/torrent'
+import { INITIAL_WALLET_INFO, type WalletInfo } from './modules/wallet'
 
 const BASE_NAME = import.meta.env.PROD ? '/dash-torrent-tracker' : ''
 

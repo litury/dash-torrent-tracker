@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom'
-import { ConnectWallet } from '@modules/wallet/components/ConnectWallet'
-import { NETWORK } from '@/config/constants'
-import type { WalletInfo } from '@modules/wallet/types'
-import dashLogo from '@/assets/dash_logo.png'
+import { ConnectWallet } from '../../modules/wallet/components/ConnectWallet'
+import { NETWORK } from '../../config/constants'
+import type { WalletInfo } from '../../modules/wallet/types'
+import dashLogo from '../../assets/dash_logo.png'
 
 interface HeaderProps {
   walletInfo: WalletInfo

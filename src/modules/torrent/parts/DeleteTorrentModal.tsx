@@ -1,8 +1,8 @@
 import { useState, type ChangeEvent } from 'react'
-import { useSdk } from '@shared/hooks/useSdk'
-import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '@/config/constants'
+import { useSdk } from '../../../shared/hooks/useSdk'
+import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import type { Torrent } from '../types'
-import type { WalletInfo } from '@modules/wallet/types'
+import type { WalletInfo } from '../../wallet/types'
 
 interface DeleteTorrentModalProps {
   torrent: Torrent

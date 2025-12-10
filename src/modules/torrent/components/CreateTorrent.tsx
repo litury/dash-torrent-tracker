@@ -1,8 +1,8 @@
 import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '@/config/constants'
-import { useSdk } from '@shared/hooks/useSdk'
-import type { WalletInfo } from '@modules/wallet/types'
+import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
+import { useSdk } from '../../../shared/hooks/useSdk'
+import type { WalletInfo } from '../../wallet/types'
 
 interface CreateTorrentProps {
   walletInfo: WalletInfo

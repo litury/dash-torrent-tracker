@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Torrent } from '../types'
-import type { WalletInfo } from '@modules/wallet/types'
+import type { WalletInfo } from '../../wallet/types'
 import { UpdateTorrentModal } from '../parts/UpdateTorrentModal'
 import { DeleteTorrentModal } from '../parts/DeleteTorrentModal'
 
