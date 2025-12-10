@@ -7,6 +7,8 @@ import { Header } from './shared/components/Header'
 import { TorrentList, CreateTorrent } from './modules/torrent'
 import { INITIAL_WALLET_INFO, type WalletInfo } from './modules/wallet'
 
+const BASE_NAME = import.meta.env.PROD ? '/dash-torrent-tracker' : ''
+
 interface OutletContext {
   walletInfo: WalletInfo
   setWalletInfo: (_info: WalletInfo) => void
@@ -35,7 +37,7 @@ const AddPage = () => {
 
 const App = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={BASE_NAME}>
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<HomePage />} />
