@@ -1,4 +1,4 @@
-import { DashPlatformSDK } from 'dash-platform-sdk/bundle.min.js'
+import { DashPlatformSDK } from 'dash-platform-sdk'
 import { NETWORK } from '@/config/constants'
 
 let dashPlatformSDK: DashPlatformSDK | null = null

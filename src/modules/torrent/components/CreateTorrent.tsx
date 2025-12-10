@@ -30,7 +30,7 @@ export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
   const handleSubmitAsync = async () => {
     try {
       const sdk = useSdk()
-      const { dashPlatformExtension } = window
+      const dashPlatformExtension = (window as any).dashPlatformExtension
 
       if (!dashPlatformExtension || !walletInfo.currentIdentity) {
         throw new Error('Wallet not connected')
@@ -65,7 +65,7 @@ export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
         identityContractNonce + 1n
       )
 
-      const stateTransition = await sdk.documents.createStateTransition(document, 0, {
+      const stateTransition = await sdk.documents.createStateTransition(document, 'create', {
         identityContractNonce: identityContractNonce + 1n
       })
 

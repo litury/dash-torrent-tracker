@@ -54,11 +54,11 @@ export const DeleteTorrentModal = ({
 
       const stateTransition = await sdk.documents.createStateTransition(
         document,
-        2,
+        'delete',
         { identityContractNonce: identityContractNonce + 1n }
       )
 
-      await window.dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
+      await (window as any).dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
 
       await onDelete(torrent.identifier)
       onClose()

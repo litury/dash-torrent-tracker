@@ -14,12 +14,13 @@ export const ConnectWallet = ({ walletInfo, setWalletInfo }: ConnectWalletProps)
   const handleConnectAsync = async () => {
     setError('')
 
-    if (!window.dashPlatformExtension) {
+    const extension = (window as any).dashPlatformExtension
+    if (!extension) {
       return setError('Dash Platform Extension is not installed')
     }
 
     try {
-      const { identities, currentIdentity } = await window.dashPlatformExtension.signer.connect()
+      const { identities, currentIdentity } = await extension.signer.connect()
       setWalletInfo(createWalletInfo(true, identities, currentIdentity))
     } catch {
       setError('Connection failed')

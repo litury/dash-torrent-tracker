@@ -45,7 +45,7 @@ export const TorrentList = ({ walletInfo }: TorrentListProps) => {
             properties.description,
             properties.magnet,
             _document.ownerId.base58(),
-            new Date(parseInt(_document.updatedAt.toString()))
+            new Date(parseInt(_document.updatedAt?.toString() ?? '0'))
           )
         })
 

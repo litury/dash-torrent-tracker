@@ -82,11 +82,11 @@ export const UpdateTorrentModal = ({
 
       const stateTransition = await sdk.documents.createStateTransition(
         document,
-        1,
+        'replace',
         { identityContractNonce: identityContractNonce + 1n }
       )
 
-      await window.dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
+      await (window as any).dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
 
       await onUpdate(torrent.identifier)
       onClose()
