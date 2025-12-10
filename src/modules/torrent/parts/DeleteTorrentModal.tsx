@@ -1,16 +1,29 @@
-import { useState } from 'react'
-import { useSdk } from '../hooks/useSdk.js'
-import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../constants.js'
+import { useState, type ChangeEvent } from 'react'
+import { useSdk } from '../../../shared/hooks/useSdk'
+import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
+import type { Torrent } from '../types'
+import type { WalletInfo } from '../../wallet/types'
 
-export default function DeleteTorrentModal({ walletInfo, torrent, isOpen, onClose, onDelete }) {
+interface DeleteTorrentModalProps {
+  torrent: Torrent
+  walletInfo: WalletInfo
+  isOpen: boolean
+  onClose: () => void
+  onDelete: (_identifier: string) => Promise<void>
+}
+
+export const DeleteTorrentModal = ({
+  torrent,
+  walletInfo,
+  isOpen,
+  onClose,
+  onDelete
+}: DeleteTorrentModalProps) => {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [confirmText, setConfirmText] = useState('')
-  const [identity, setIdentity] = useState('')
-  const [keyId, setKeyId] = useState('1')
-  const [privateKey, setPrivateKey] = useState('')
 
-  const handleDelete = async () => {
+  const handleDeleteAsync = async () => {
     if (confirmText !== 'DELETE') {
       setError('Please type DELETE to confirm')
       return
@@ -20,26 +33,37 @@ export default function DeleteTorrentModal({ walletInfo, torrent, isOpen, onClos
     setError(null)
 
     try {
-      const  dashPlatformSDK = useSdk()
+      const sdk = useSdk()
 
-      const identityContractNonce = await dashPlatformSDK.identities.getIdentityContractNonce(walletInfo.currentIdentity, DATA_CONTRACT_IDENTIFIER)
-
-      const where =  [['$id', '==', torrent.identifier]]
-
-      const [document] = await dashPlatformSDK.documents.query(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, where)
-
-      if (!document) {
-        return setError(`Could not fetch torrent with identifier ${torrent.identifier}`)
+      if (!walletInfo.currentIdentity) {
+        throw new Error('Wallet not connected')
       }
 
-      const stateTransition = await dashPlatformSDK.documents.createStateTransition(document, 2,identityContractNonce + 1n)
+      const identityContractNonce = await sdk.identities.getIdentityContractNonce(
+        walletInfo.currentIdentity,
+        DATA_CONTRACT_IDENTIFIER
+      )
 
-      await window.dashPlatformExtension.signer.signAndBroadcast(stateTransition)
+      const where = [['$id', '==', torrent.identifier]]
 
-      await onDelete(torrent.identifier, { identity, keyId, privateKey })
+      const [document] = await sdk.documents.query(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, where)
+
+      if (!document) {
+        throw new Error(`Could not fetch torrent with identifier ${torrent.identifier}`)
+      }
+
+      const stateTransition = await sdk.documents.createStateTransition(
+        document,
+        'delete',
+        { identityContractNonce: identityContractNonce + 1n }
+      )
+
+      await (window as any).dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
+
+      await onDelete(torrent.identifier)
       onClose()
     } catch (err) {
-      setError(err.toString())
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
     }
@@ -49,17 +73,14 @@ export default function DeleteTorrentModal({ walletInfo, torrent, isOpen, onClos
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 z-40 transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4">
           <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-2xl">
-            {/* Header */}
             <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -83,7 +104,6 @@ export default function DeleteTorrentModal({ walletInfo, torrent, isOpen, onClos
               </div>
             </div>
 
-            {/* Content */}
             <div className="p-6 space-y-6">
               {error && (
                 <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4">
@@ -138,7 +158,7 @@ export default function DeleteTorrentModal({ walletInfo, torrent, isOpen, onClos
                       type="text"
                       id="confirm-delete"
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                      onChange={(e) => setConfirmText(e.target.value)}
+                      onChange={(_e: ChangeEvent<HTMLInputElement>) => setConfirmText(_e.target.value)}
                       value={confirmText}
                       placeholder="Type DELETE"
                     />
@@ -146,7 +166,6 @@ export default function DeleteTorrentModal({ walletInfo, torrent, isOpen, onClos
                 </div>
               </div>
 
-              {/* Footer */}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -158,15 +177,15 @@ export default function DeleteTorrentModal({ walletInfo, torrent, isOpen, onClos
                 </button>
                 <button
                   type="button"
-                  onClick={handleDelete}
+                  onClick={handleDeleteAsync}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                   disabled={loading || confirmText !== 'DELETE'}
                 >
                   {loading ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
                       Deleting...
                     </>

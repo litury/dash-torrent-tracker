@@ -1,11 +1,13 @@
-import React from 'react';
+interface ProfileChipProps {
+  address: string | null
+}
 
-export default function ProfileChip({ address }) {
+export const ProfileChip = ({ address }: ProfileChipProps) => {
   if (!address || typeof address !== 'string') {
-    return null;
+    return null
   }
 
-  const truncatedAddress = `${address.substring(0, 6)}...${address.substring(address.length - 6)}`;
+  const truncatedAddress = `${address.substring(0, 6)}...${address.substring(address.length - 6)}`
 
   return (
     <div
@@ -13,8 +15,8 @@ export default function ProfileChip({ address }) {
       aria-label={`Connected account: ${address}`}
       title={address}
     >
-      <span className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></span>
+      <span className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
       <span className="text-sm font-mono font-medium">{truncatedAddress}</span>
     </div>
-  );
+  )
 }

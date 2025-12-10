@@ -1,23 +1,41 @@
-import { useState, useEffect } from 'react'
-import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../constants.js'
-import { useSdk } from '../hooks/useSdk.js'
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
+import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
+import { useSdk } from '../../../shared/hooks/useSdk'
+import type { Torrent } from '../types'
+import type { WalletInfo } from '../../wallet/types'
 
-export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClose, onUpdate }) {
-  const [form, setForm] = useState({
+interface UpdateTorrentModalProps {
+  torrent: Torrent
+  walletInfo: WalletInfo
+  isOpen: boolean
+  onClose: () => void
+  onUpdate: (_identifier: string) => Promise<void>
+}
+
+interface UpdateForm {
+  name: string
+  description: string
+  magnet: string
+}
+
+export const UpdateTorrentModal = ({
+  torrent,
+  walletInfo,
+  isOpen,
+  onClose,
+  onUpdate
+}: UpdateTorrentModalProps) => {
+  const [form, setForm] = useState<UpdateForm>({
     name: '',
     description: '',
-    magnet: '',
-    identity: '',
-    keyId: '1',
-    privateKey: ''
+    magnet: ''
   })
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (torrent) {
       setForm({
-        ...form,
         name: torrent.name || '',
         description: torrent.description || '',
         magnet: torrent.magnet || ''
@@ -25,19 +43,26 @@ export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClos
     }
   }, [torrent])
 
-  const handleInputChange = (key, e) => {
-    setForm({ ...form, [key]: e.target.value })
+  const handleInputChange = (_key: keyof UpdateForm, _e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [_key]: _e.target.value })
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmitAsync = async (_e: FormEvent) => {
+    _e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
-      const dashPlatformSDK  = useSdk()
+      const sdk = useSdk()
 
-      const identityContractNonce = await dashPlatformSDK.identities.getIdentityContractNonce(walletInfo.currentIdentity, DATA_CONTRACT_IDENTIFIER)
+      if (!walletInfo.currentIdentity) {
+        throw new Error('Wallet not connected')
+      }
+
+      const identityContractNonce = await sdk.identities.getIdentityContractNonce(
+        walletInfo.currentIdentity,
+        DATA_CONTRACT_IDENTIFIER
+      )
 
       const data = {
         name: form.name,
@@ -45,25 +70,28 @@ export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClos
         magnet: form.magnet
       }
 
-      const where =  [['$id', '==', torrent.identifier]]
+      const where = [['$id', '==', torrent.identifier]]
 
-      const [document] = await dashPlatformSDK.documents.query(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, where)
+      const [document] = await sdk.documents.query(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, where)
 
       if (!document) {
-        return setError(`Could not fetch torrent with identifier ${torrent.identifier}`)
+        throw new Error(`Could not fetch torrent with identifier ${torrent.identifier}`)
       }
 
       document.properties = data
 
-      const stateTransition = await dashPlatformSDK.documents.createStateTransition(document, 1,identityContractNonce + 1n)
+      const stateTransition = await sdk.documents.createStateTransition(
+        document,
+        'replace',
+        { identityContractNonce: identityContractNonce + 1n }
+      )
 
-      await window.dashPlatformExtension.signer.signAndBroadcast(stateTransition)
+      await (window as any).dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
 
-      await onUpdate(torrent.identifier, form)
-
+      await onUpdate(torrent.identifier)
       onClose()
     } catch (e) {
-      setError(e.toString())
+      setError(e instanceof Error ? e.message : String(e))
       console.error('Error during submit:', e)
     } finally {
       setLoading(false)
@@ -74,17 +102,14 @@ export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClos
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 z-40 transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4">
           <div className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-2xl">
-            {/* Header */}
             <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -104,8 +129,7 @@ export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClos
               </p>
             </div>
 
-            {/* Content */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmitAsync} className="p-6 space-y-6">
               {error && (
                 <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4">
                   <div className="flex">
@@ -132,7 +156,7 @@ export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClos
                   type="text"
                   id="update-name"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                  onChange={(e) => handleInputChange('name', e)}
+                  onChange={(_e) => handleInputChange('name', _e)}
                   value={form.name}
                   placeholder="Enter torrent name"
                   required
@@ -145,9 +169,9 @@ export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClos
                 </label>
                 <textarea
                   id="update-description"
-                  rows="3"
+                  rows={3}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors resize-none"
-                  onChange={(e) => handleInputChange('description', e)}
+                  onChange={(_e) => handleInputChange('description', _e)}
                   value={form.description}
                   placeholder="Describe your torrent content"
                   required
@@ -162,14 +186,13 @@ export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClos
                   type="text"
                   id="update-magnet"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors font-mono text-sm"
-                  onChange={(e) => handleInputChange('magnet', e)}
+                  onChange={(_e) => handleInputChange('magnet', _e)}
                   value={form.magnet}
                   placeholder="magnet:?xt=urn:btih:...."
                   required
                 />
               </div>
 
-              {/* Footer */}
               <div className="flex justify-end gap-3 pt-6">
                 <button
                   type="button"
@@ -187,8 +210,8 @@ export default function UpdateTorrentModal({ walletInfo, torrent, isOpen, onClos
                   {loading ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
                       Updating...
                     </>

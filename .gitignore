@@ -44,3 +44,4 @@ yarn-error.*
 # React Router
 /.react-router/
 /build/
+doc

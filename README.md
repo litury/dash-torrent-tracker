@@ -1,85 +1,51 @@
-# Welcome to React Router!
+# Dash Torrent Tracker
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Decentralized torrent tracker built on [Dash Platform](https://dashplatform.readme.io/). Magnet links are stored on-chain, making the tracker censorship-resistant.
+
+**Live demo:** https://litury.github.io/dash-torrent-tracker/
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- Browse torrents stored on Dash Platform testnet
+- Add new torrents (requires [Dash Platform Extension](https://chromewebstore.google.com/detail/dash-platform-extension))
+- No central server — data lives on blockchain
 
-## Getting Started
+## Tech Stack
 
-### Installation
+- React 19 + Vite
+- Tailwind CSS
+- [dash-platform-sdk](https://www.npmjs.com/package/dash-platform-sdk)
 
-Install the dependencies:
+## Development
 
 ```bash
 npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Open http://localhost:5173
 
-## Building for Production
-
-Create a production build:
+## Build
 
 ```bash
 npm run build
 ```
 
-## Deployment
+Output in `dist/`
 
-### Docker Deployment
+## Data Contract
 
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
+Torrents are stored using this schema on Dash Platform testnet:
 
 ```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+Contract ID: 6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5
 ```
 
-## Styling
+Each torrent document contains:
+- `name` — torrent name (6-160 chars)
+- `description` — description (16-160 chars)
+- `magnet` — magnet link (16-1000 chars)
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+## License
 
----
-
-Built with ❤️ using React Router.
+MIT
