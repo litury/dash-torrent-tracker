@@ -10,6 +10,7 @@
   "dependencies": {
     "@scure/base": "^1.2.4",
     "dash-platform-sdk": "^1.2.0",
+    "lucide-react": "^0.560.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.1.1"
