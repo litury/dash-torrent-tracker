@@ -4,6 +4,33 @@ import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constan
 import { useSdk } from '../../../shared/hooks/useSdk'
 import type { WalletInfo } from '../../wallet/types'
 
+// Validation regex patterns (can be copied to contract)
+const NAME_REGEX = /^.{3,100}$/
+const DESCRIPTION_REGEX = /^[\s\S]{16,1000}$/
+const MAGNET_REGEX = /^magnet:\?xt=urn:btih:[a-zA-Z0-9]{32,40}/
+
+// Validation functions
+const validateName = (value: string): string | null => {
+  if (!NAME_REGEX.test(value.trim())) {
+    return 'Name must be 3-100 characters'
+  }
+  return null
+}
+
+const validateDescription = (value: string): string | null => {
+  if (!DESCRIPTION_REGEX.test(value.trim())) {
+    return 'Description must be 16-1000 characters'
+  }
+  return null
+}
+
+const validateMagnet = (value: string): string | null => {
+  if (!MAGNET_REGEX.test(value)) {
+    return 'Invalid magnet link format (must start with magnet:?xt=urn:btih:)'
+  }
+  return null
+}
+
 interface CreateTorrentProps {
   walletInfo: WalletInfo
 }
@@ -14,6 +41,12 @@ interface TorrentForm {
   magnet: string
 }
 
+interface FormErrors {
+  name: string | null
+  description: string | null
+  magnet: string | null
+}
+
 export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
@@ -22,12 +55,51 @@ export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
     description: '',
     magnet: ''
   })
+  const [fieldErrors, setFieldErrors] = useState<FormErrors>({
+    name: null,
+    description: null,
+    magnet: null
+  })
 
   const handleInputChange = (_key: keyof TorrentForm, _e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [_key]: _e.target.value })
+    // Clear error when user starts typing
+    if (fieldErrors[_key]) {
+      setFieldErrors({ ...fieldErrors, [_key]: null })
+    }
+  }
+
+  const handleBlur = (_key: keyof TorrentForm) => {
+    let error: string | null = null
+    switch (_key) {
+      case 'name':
+        error = validateName(form.name)
+        break
+      case 'description':
+        error = validateDescription(form.description)
+        break
+      case 'magnet':
+        error = validateMagnet(form.magnet)
+        break
+    }
+    setFieldErrors({ ...fieldErrors, [_key]: error })
+  }
+
+  const validateAllFields = (): boolean => {
+    const errors: FormErrors = {
+      name: validateName(form.name),
+      description: validateDescription(form.description),
+      magnet: validateMagnet(form.magnet)
+    }
+    setFieldErrors(errors)
+    return !errors.name && !errors.description && !errors.magnet
   }
 
   const handleSubmitAsync = async () => {
+    if (!validateAllFields()) {
+      return
+    }
+
     try {
       const sdk = useSdk()
       const dashPlatformExtension = (window as any).dashPlatformExtension
@@ -78,7 +150,8 @@ export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
     }
   }
 
-  const isFormValid = form.name && form.description && form.magnet
+  const isFormValid = form.name && form.description && form.magnet &&
+    !fieldErrors.name && !fieldErrors.description && !fieldErrors.magnet
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -174,12 +247,18 @@ export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
                   <input
                     type="text"
                     id="name"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors ${
+                      fieldErrors.name ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
                     onChange={(_e) => handleInputChange('name', _e)}
+                    onBlur={() => handleBlur('name')}
                     value={form.name}
                     placeholder="Enter torrent name"
                     required
                   />
+                  {fieldErrors.name && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.name}</p>
+                  )}
                 </div>
 
                 <div>
@@ -189,12 +268,18 @@ export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
                   <textarea
                     id="description"
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors resize-none"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors resize-none ${
+                      fieldErrors.description ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
                     onChange={(_e) => handleInputChange('description', _e)}
+                    onBlur={() => handleBlur('description')}
                     value={form.description}
                     placeholder="Describe your torrent content"
                     required
                   />
+                  {fieldErrors.description && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.description}</p>
+                  )}
                 </div>
 
                 <div>
@@ -204,12 +289,18 @@ export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
                   <input
                     type="text"
                     id="magnet"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors font-mono text-sm"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors font-mono text-sm ${
+                      fieldErrors.magnet ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
                     onChange={(_e) => handleInputChange('magnet', _e)}
+                    onBlur={() => handleBlur('magnet')}
                     value={form.magnet}
                     placeholder="magnet:?xt=urn:btih:...."
                     required
                   />
+                  {fieldErrors.magnet && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.magnet}</p>
+                  )}
                 </div>
               </form>
             )}
