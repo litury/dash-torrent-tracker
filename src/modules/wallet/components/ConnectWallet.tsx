@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ProfileChip } from './ProfileChip'
+import { ProfileChip } from '../parts/ProfileChip'
 import type { WalletInfo } from '../types'
 import { createWalletInfo } from '../types'
 
@@ -35,11 +35,11 @@ export const ConnectWallet = ({ walletInfo, setWalletInfo }: ConnectWalletProps)
     <div className="flex flex-col items-end">
       <button
         onClick={handleConnectAsync}
-        className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700"
+        className="px-4 py-2 text-sm font-medium rounded-lg text-dash-white bg-dash-blue hover:bg-dash-blue-75"
       >
         Connect Wallet
       </button>
-      {error && <span className="mt-1 text-xs text-red-500">{error}</span>}
+      {error && <span className="mt-1 text-xs text-error">{error}</span>}
     </div>
   )
 }
