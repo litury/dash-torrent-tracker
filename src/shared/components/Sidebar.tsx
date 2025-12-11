@@ -1,60 +1,142 @@
-import { NavLink } from 'react-router-dom'
-import { Plus, LayoutGrid } from 'lucide-react'
-import type { WalletInfo } from '../../modules/wallet/types'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { Plus, LayoutGrid, Clock, TrendingUp, Video, Music, Package, BookOpen, MoreHorizontal } from 'lucide-react'
+import { SearchInput } from './SearchInput'
+import dashLogo from '../../assets/dash_logo.svg'
 
-interface SidebarProps {
-  walletInfo: WalletInfo
-  isOpen: boolean
-  onClose: () => void
-}
-
-const navItems = [
-  { to: '/', icon: LayoutGrid, label: 'All torrents' }
+const CATEGORIES = [
+  { id: 'all', label: 'All Torrents', icon: LayoutGrid, disabled: false },
+  { id: 'recent', label: 'Recent', icon: Clock, disabled: true },
+  { id: 'popular', label: 'Popular', icon: TrendingUp, disabled: true },
+  { id: 'video', label: 'Video', icon: Video, disabled: true },
+  { id: 'music', label: 'Music', icon: Music, disabled: true },
+  { id: 'apps', label: 'Apps', icon: Package, disabled: true },
+  { id: 'books', label: 'Books', icon: BookOpen, disabled: true },
+  { id: 'other', label: 'Other', icon: MoreHorizontal, disabled: true }
 ]
 
-export const Sidebar = ({ walletInfo, isOpen, onClose }: SidebarProps) => {
-  if (!isOpen) return null
+interface SidebarProps {
+  isOpen: boolean
+  onClose: () => void
+  activeCategory: string
+  onCategoryChange: (_id: string) => void
+  searchQuery: string
+  onSearchChange: (_query: string) => void
+  isWalletConnected: boolean
+}
+
+export const Sidebar = ({
+  isOpen,
+  onClose,
+  activeCategory,
+  onCategoryChange,
+  searchQuery,
+  onSearchChange,
+  isWalletConnected
+}: SidebarProps) => {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleCategoryClick = (id: string) => {
+    onCategoryChange(id)
+    if (location.pathname !== '/') {
+      navigate('/')
+    }
+    onClose()
+  }
+
+  const sidebarContent = (
+    <aside className="fixed left-0 top-0 h-full w-64 bg-dash-white dark:bg-dash-dark border-r border-dash-dark-15 dark:border-dash-white-15 flex flex-col z-50">
+      {/* Logo */}
+      <NavLink
+        to="/"
+        onClick={onClose}
+        className="flex items-center gap-3 px-4 py-5 border-b border-dash-dark-15 dark:border-dash-white-15 hover:opacity-90 transition-opacity"
+      >
+        <img className="h-5" src={dashLogo} alt="Dash" />
+        <span className="text-xs font-bold text-dash-dark dark:text-dash-white uppercase tracking-widest">
+          Torrent Tracker
+        </span>
+      </NavLink>
+
+      {/* Search */}
+      <div className="p-4">
+        <SearchInput value={searchQuery} onChange={onSearchChange} />
+      </div>
+
+
+      {/* Categories */}
+      <nav className="flex-1 overflow-y-auto">
+        <div className="px-6 py-2 text-xs font-medium text-dash-dark-75 dark:text-dash-white-75 uppercase tracking-wider">
+          Categories
+        </div>
+        {CATEGORIES.map(({ id, label, icon: Icon, disabled }) => (
+          <button
+            key={id}
+            disabled={disabled}
+            onClick={() => {
+              if (!disabled) {
+                handleCategoryClick(id)
+              }
+            }}
+            className={`flex items-center gap-3 w-full px-6 py-3 text-sm font-medium transition-colors ${
+              disabled
+                ? 'text-dash-dark-75/50 dark:text-dash-white-75/50 cursor-not-allowed border-l-2 border-transparent'
+                : activeCategory === id
+                  ? 'text-dash-blue bg-dash-blue-5 dark:bg-dash-blue-15 border-l-2 border-dash-blue'
+                  : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white hover:bg-dash-dark-5 dark:hover:bg-dash-white-15 border-l-2 border-transparent'
+            }`}
+            title={disabled ? 'Coming soon' : undefined}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      {/* New Torrent button */}
+      <div className="p-3 border-t border-dash-dark-15 dark:border-dash-white-15">
+        {isWalletConnected ? (
+          <NavLink
+            to="/add"
+            onClick={onClose}
+            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium rounded-lg text-dash-white bg-dash-blue hover:bg-dash-blue-75 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            New Torrent
+          </NavLink>
+        ) : (
+          <button
+            disabled
+            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium rounded-lg text-dash-white/50 bg-dash-blue/50 cursor-not-allowed"
+            title="Connect wallet to add torrents"
+          >
+            <Plus className="w-4 h-4" />
+            New Torrent
+          </button>
+        )}
+      </div>
+    </aside>
+  )
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={onClose}
-      />
-      <aside className="fixed left-0 top-0 h-full w-64 bg-dash-white dark:bg-dash-dark border-r border-dash-dark-15 dark:border-dash-white-15 flex flex-col z-50">
-        <div className="p-6">
-          {walletInfo.connected && (
-            <NavLink
-              to="/add"
-              onClick={onClose}
-              className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-dash-blue hover:bg-dash-blue-75 text-dash-white font-medium rounded-xl transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              New Torrent
-            </NavLink>
-          )}
-        </div>
+      {/* Desktop: always visible */}
+      <div className="hidden lg:block">
+        {sidebarContent}
+      </div>
 
-        <nav className="flex-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-6 py-4 text-base font-medium transition-colors ${
-                  isActive
-                    ? 'text-dash-blue bg-dash-blue-5 dark:bg-dash-blue-15'
-                    : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white hover:bg-dash-dark-5 dark:hover:bg-dash-white-15'
-                }`
-              }
-            >
-              <Icon className="w-5 h-5" />
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
+      {/* Mobile: overlay */}
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={onClose}
+          />
+          <div className="lg:hidden">
+            {sidebarContent}
+          </div>
+        </>
+      )}
     </>
   )
 }
