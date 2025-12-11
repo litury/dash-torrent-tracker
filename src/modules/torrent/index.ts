@@ -1,5 +1,3 @@
 export * from './types'
-export { TorrentList } from './components/TorrentList'
-export { TorrentListItem } from './components/TorrentListItem'
+export { TorrentTable } from './components/TorrentTable'
 export { CreateTorrent } from './components/CreateTorrent'
-export { AddTorrentButton } from './components/AddTorrentButton'
