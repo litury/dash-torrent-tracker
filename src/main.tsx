@@ -1,7 +1,7 @@
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Outlet, useOutletContext } from 'react-router-dom'
-import './index.css'
+import './main.css'
 
 import { Header } from './shared/components/Header'
 import { TorrentList, CreateTorrent } from './modules/torrent'

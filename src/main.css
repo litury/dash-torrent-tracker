@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Dash Design System - Primary Colors */
+  --color-dash-blue: #4C7EFF;
+  --color-dash-dark: #0C1C33;
+  --color-dash-turquoise: #60F6D2;
+
+  /* Dash Design System - Secondary Colors */
+  --color-dash-light-blue: #6B95FF;
+  --color-dash-space-cadet: #142A4A;
+
+  /* Primary palette (shades of Dash Blue) */
+  --color-primary-50: #EEF3FF;
+  --color-primary-100: #DCE6FF;
+  --color-primary-200: #B9CDFF;
+  --color-primary-300: #8FADFF;
+  --color-primary-400: #6B95FF;
+  --color-primary-500: #4C7EFF;
+  --color-primary-600: #3A63DB;
+  --color-primary-700: #2B4AB7;
+  --color-primary-800: #1F3593;
+  --color-primary-900: #142A4A;
+  --color-primary-950: #0C1C33;
+
+  /* Dash Design System - State Colors */
+  --color-success: #40BF40;
+  --color-error: #CD2E00;
+  --color-warning: #F98F12;
+
+  /* Dash Design System - Shadows */
+  --shadow-sm: 0 0 50px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 0 75px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 0 125px rgba(0, 0, 0, 0.25);
+}
