@@ -79,7 +79,7 @@ export const TorrentRow = ({ torrent, walletInfo }: TorrentRowProps) => {
   return (
     <>
       <tr className="hover:bg-dash-dark-5 dark:hover:bg-dash-white-5 transition-colors">
-        <td className="px-4 py-4 whitespace-nowrap">
+        <td className={`px-4 py-4 whitespace-nowrap border-l-2 ${isOwner ? 'border-dash-blue' : 'border-transparent'}`}>
           <div className="flex flex-col">
             <div className="text-sm font-medium text-dash-dark dark:text-dash-white">
               {torrent.name}
