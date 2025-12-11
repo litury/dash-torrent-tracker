@@ -6,11 +6,12 @@ import type { WalletInfo } from '../modules/wallet/types'
 export interface OutletContext {
   walletInfo: WalletInfo
   setWalletInfo: (_info: WalletInfo) => void
+  activeCategory: string
+  searchQuery: string
 }
 
 export const HomePage = () => {
-  const { walletInfo } = useOutletContext<OutletContext>()
-  return <TorrentTable walletInfo={walletInfo} />
+  return <TorrentTable />
 }
 
 export const AddTorrentPage = () => {

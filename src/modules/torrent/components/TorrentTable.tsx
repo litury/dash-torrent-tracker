@@ -1,25 +1,24 @@
 import { useEffect, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useOutletContext } from 'react-router-dom'
 import { FileText, Plus } from 'lucide-react'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
-import { Tabs, TORRENT_TABS } from '../../../shared/components/Tabs'
-import { SearchInput } from '../../../shared/components/SearchInput'
 import type { Torrent } from '../types'
 import type { WalletInfo } from '../../wallet/types'
 import { createTorrent } from '../types'
 import { TorrentRow } from './TorrentRow'
 
-interface TorrentTableProps {
+interface OutletContext {
   walletInfo: WalletInfo
+  activeCategory: string
+  searchQuery: string
 }
 
-export const TorrentTable = ({ walletInfo }: TorrentTableProps) => {
+export const TorrentTable = () => {
+  const { walletInfo, searchQuery } = useOutletContext<OutletContext>()
   const [torrents, setTorrents] = useState<Torrent[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('recent')
-  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     const fetchTorrentsAsync = async () => {
@@ -71,13 +70,6 @@ export const TorrentTable = ({ walletInfo }: TorrentTableProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <Tabs tabs={TORRENT_TABS} activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="w-full sm:w-64">
-          <SearchInput value={searchQuery} onChange={setSearchQuery} />
-        </div>
-      </div>
-
       {loading && (
         <div className="flex flex-col items-center justify-center py-12">
           <div className="relative">
