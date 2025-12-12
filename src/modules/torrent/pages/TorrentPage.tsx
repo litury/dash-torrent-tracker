@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
-import { Copy, Check, ExternalLink } from 'lucide-react'
+import { Copy, Check, ExternalLink, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { Button } from '../../../shared/components/Button'
@@ -11,7 +11,6 @@ import { createTorrent } from '../types'
 import { OwnerIdentity } from '../parts/OwnerIdentity'
 import { DocumentIdenticon } from '../parts/DocumentIdenticon'
 import { MagnetButton } from '../parts/MagnetButton'
-import { TorrentActions } from '../parts/TorrentActions'
 import { UpdateTorrentModal } from '../parts/UpdateTorrentModal'
 import { DeleteTorrentModal } from '../parts/DeleteTorrentModal'
 
@@ -144,30 +143,41 @@ export const TorrentPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Actions */}
-      {isOwner && (
-        <div className="flex justify-end">
-          <TorrentActions
-            torrent={torrent}
-            isOwner={isOwner}
-            onEdit={setEditingTorrent}
-            onDelete={setDeletingTorrent}
-          />
-        </div>
-      )}
-
       {/* Main content */}
       <div className="bg-dash-white dark:bg-dash-space-cadet rounded-xl border border-dash-dark-15 dark:border-dash-white-15 overflow-hidden">
         {/* Title section */}
         <div className="p-6 border-b border-dash-dark-15 dark:border-dash-white-15">
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
             <DocumentIdenticon documentId={torrent.identifier} size="lg" />
 
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-dash-dark dark:text-dash-white">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-bold text-dash-dark dark:text-dash-white truncate">
                 {torrent.name}
               </h1>
             </div>
+
+            {isOwner && (
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="alternative"
+                  color="darkBlue"
+                  size="small"
+                  icon={<Pencil />}
+                  onClick={() => setEditingTorrent(torrent)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="alternative"
+                  color="error"
+                  size="small"
+                  icon={<Trash2 />}
+                  onClick={() => setDeletingTorrent(torrent)}
+                >
+                  Delete
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
