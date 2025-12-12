@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Menu, Sun, Moon } from 'lucide-react'
 import { ConnectWallet } from '../../modules/wallet/components/ConnectWallet'
+import { Button } from './Button'
 import type { WalletInfo } from '../../modules/wallet/types'
 
 interface HeaderProps {
@@ -39,17 +40,20 @@ export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, o
 
   return (
     <header className="sticky top-0 z-10 bg-dash-white dark:bg-dash-dark border-b border-dash-dark-15 dark:border-dash-white-15">
-      <div className="px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center justify-between">
+      <div className="px-4 sm:px-6 lg:px-8 h-12 flex items-center">
+        <div className="flex items-center justify-between w-full">
           {/* Left side: Menu + Title */}
           <div className="flex items-center gap-4">
-            <button
+            <Button
+              variant="ghost"
+              color="darkBlue"
+              size="small"
+              iconOnly
+              icon={<Menu />}
               onClick={onMenuClick}
-              className="lg:hidden p-2 text-dash-dark-75 hover:text-dash-dark dark:text-dash-white-75 dark:hover:text-dash-white hover:bg-dash-dark-15 dark:hover:bg-dash-white-15 rounded-lg transition-colors"
+              className="lg:hidden"
               aria-label="Open menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+            />
 
             {title && (
               <h1 className="text-lg font-semibold text-dash-dark dark:text-dash-white flex items-center">
@@ -66,39 +70,37 @@ export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, o
 
             {ownerFilter !== undefined && onOwnerFilterChange && walletInfo.connected && (
               <div className="flex items-center gap-1 ml-4">
-                <button
+                <Button
+                  variant={ownerFilter === 'all' ? 'primary' : 'alternative'}
+                  color={ownerFilter === 'all' ? 'blue' : 'darkBlue'}
+                  size="small"
                   onClick={() => onOwnerFilterChange('all')}
-                  className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                    ownerFilter === 'all'
-                      ? 'bg-dash-blue text-dash-white'
-                      : 'bg-dash-dark-5 dark:bg-dash-white-15 text-dash-dark-75 dark:text-dash-white-75 hover:bg-dash-dark-15 dark:hover:bg-dash-white-25'
-                  }`}
                 >
                   All
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant={ownerFilter === 'mine' ? 'primary' : 'alternative'}
+                  color={ownerFilter === 'mine' ? 'blue' : 'darkBlue'}
+                  size="small"
                   onClick={() => onOwnerFilterChange('mine')}
-                  className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                    ownerFilter === 'mine'
-                      ? 'bg-dash-blue text-dash-white'
-                      : 'bg-dash-dark-5 dark:bg-dash-white-15 text-dash-dark-75 dark:text-dash-white-75 hover:bg-dash-dark-15 dark:hover:bg-dash-white-25'
-                  }`}
                 >
                   My Torrents
-                </button>
+                </Button>
               </div>
             )}
           </div>
 
           {/* Right side */}
           <div className="flex items-center gap-4 sm:gap-6">
-            <button
+            <Button
+              variant="ghost"
+              color="darkBlue"
+              size="small"
+              iconOnly
+              icon={isDark ? <Sun /> : <Moon />}
               onClick={toggleTheme}
-              className="text-dash-dark-75 hover:text-dash-dark dark:text-dash-white-75 dark:hover:text-dash-white transition-colors"
               aria-label="Toggle theme"
-            >
-              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
+            />
 
             <ConnectWallet walletInfo={walletInfo} setWalletInfo={setWalletInfo} />
           </div>

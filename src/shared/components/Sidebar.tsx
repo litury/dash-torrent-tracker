@@ -1,6 +1,7 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { Plus, LayoutGrid, Clock, TrendingUp, Video, Music, Package, BookOpen, MoreHorizontal } from 'lucide-react'
 import { SearchInput } from './SearchInput'
+import { Button } from './Button'
 import dashLogo from '../../assets/dash_logo.svg'
 
 const CATEGORIES = [
@@ -49,7 +50,7 @@ export const Sidebar = ({
       <NavLink
         to="/"
         onClick={onClose}
-        className="flex items-center gap-3 px-4 py-5 border-b border-dash-dark-15 dark:border-dash-white-15 hover:opacity-90 transition-opacity"
+        className="flex items-center gap-3 px-4 h-12 border-b border-dash-dark-15 dark:border-dash-white-15 hover:opacity-90 transition-opacity"
       >
         <img className="h-5" src={dashLogo} alt="Dash" />
         <span className="text-xs font-bold text-dash-dark dark:text-dash-white uppercase tracking-widest">
@@ -93,25 +94,23 @@ export const Sidebar = ({
       </nav>
 
       {/* New Torrent button */}
-      <div className="p-3 border-t border-dash-dark-15 dark:border-dash-white-15">
+      <div className="px-3 h-12 flex items-center border-t border-dash-dark-15 dark:border-dash-white-15 w-full">
         {isWalletConnected ? (
-          <NavLink
-            to="/add"
-            onClick={onClose}
-            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium rounded-lg text-dash-white bg-dash-blue hover:bg-dash-blue-75 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Torrent
+          <NavLink to="/add" onClick={onClose} className="w-full">
+            <Button size="small" icon={<Plus />} className="w-full">
+              New Torrent
+            </Button>
           </NavLink>
         ) : (
-          <button
+          <Button
+            size="small"
+            icon={<Plus />}
             disabled
-            className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium rounded-lg text-dash-white/50 bg-dash-blue/50 cursor-not-allowed"
+            className="w-full"
             title="Connect wallet to add torrents"
           >
-            <Plus className="w-4 h-4" />
             New Torrent
-          </button>
+          </Button>
         )}
       </div>
     </aside>
