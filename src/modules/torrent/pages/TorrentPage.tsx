@@ -3,6 +3,7 @@ import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import { ArrowLeft, Copy, Check, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSdk } from '../../../shared/hooks/useSdk'
+import { Button } from '../../../shared/components/Button'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import type { Torrent } from '../types'
 import type { WalletInfo } from '../../wallet/types'
@@ -128,12 +129,15 @@ export const TorrentPage = () => {
     return (
       <div className="text-center py-12">
         <p className="text-error">{error || 'Torrent not found'}</p>
-        <button
+        <Button
+          variant="ghost"
+          color="blue"
+          size="small"
           onClick={() => navigate('/')}
-          className="mt-4 text-dash-blue hover:underline"
+          className="mt-4"
         >
           Back to torrents
-        </button>
+        </Button>
       </div>
     )
   }
@@ -142,13 +146,15 @@ export const TorrentPage = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <button
+        <Button
+          variant="ghost"
+          color="darkBlue"
+          size="small"
+          icon={<ArrowLeft />}
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
           Back
-        </button>
+        </Button>
 
         <TorrentActions
           torrent={torrent}
@@ -201,17 +207,17 @@ export const TorrentPage = () => {
 
           <div className="flex items-center justify-between py-2 border-b border-dash-dark-5 dark:border-dash-white-5">
             <span className="text-sm text-dash-dark-75 dark:text-dash-white-75">Document ID</span>
-            <button
+            <Button
+              variant="ghost"
+              color="darkBlue"
+              size="small"
+              icon={copiedId ? <Check className="text-success" /> : <Copy />}
+              iconPosition="right"
               onClick={handleCopyId}
-              className="flex items-center gap-2 text-sm font-mono text-dash-dark dark:text-dash-white hover:text-dash-blue transition-colors"
+              className="font-mono"
             >
               {torrent.identifier.slice(0, 8)}...{torrent.identifier.slice(-4)}
-              {copiedId ? (
-                <Check className="w-4 h-4 text-success" />
-              ) : (
-                <Copy className="w-4 h-4" />
-              )}
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center justify-between py-2">

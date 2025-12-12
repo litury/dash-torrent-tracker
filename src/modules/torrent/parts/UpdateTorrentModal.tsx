@@ -2,8 +2,10 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
+import { X, RefreshCw } from 'lucide-react'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import { useSdk } from '../../../shared/hooks/useSdk'
+import { Button } from '../../../shared/components/Button'
 import type { Torrent } from '../types'
 import type { WalletInfo } from '../../wallet/types'
 
@@ -109,14 +111,14 @@ export const UpdateTorrentModal = ({
                 <h3 className="text-lg font-semibold text-dash-dark dark:text-dash-white">
                   Update Torrent
                 </h3>
-                <button
+                <Button
+                  variant="ghost"
+                  color="darkBlue"
+                  size="small"
+                  iconOnly
+                  icon={<X />}
                   onClick={onClose}
-                  className="text-dash-dark-75 hover:text-dash-dark dark:text-dash-white-75 dark:hover:text-dash-white transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                />
               </div>
               <p className="mt-1 text-sm text-dash-dark-75 dark:text-dash-white-75">
                 Update the torrent information for ID: {torrent?.identifier.substring(0, 8)}...
@@ -164,40 +166,24 @@ export const UpdateTorrentModal = ({
               </div>
 
               <div className="flex justify-end gap-3 pt-6">
-                <button
+                <Button
                   type="button"
+                  variant="alternative"
+                  color="darkBlue"
+                  size="small"
                   onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-dash-dark dark:text-dash-white bg-dash-white dark:bg-dash-space-cadet border border-dash-dark-15 dark:border-dash-white-15 rounded-lg hover:bg-dash-dark-5 dark:hover:bg-dash-white-15 transition-colors"
                   disabled={isSubmitting}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className={clsx(
-                    'px-4 py-2 text-sm font-medium text-dash-white bg-dash-blue rounded-lg',
-                    'hover:bg-dash-blue-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dash-blue',
-                    'transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center'
-                  )}
-                  disabled={isSubmitting}
+                  size="small"
+                  icon={<RefreshCw />}
+                  loading={isSubmitting}
                 >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-dash-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      Update Torrent
-                    </>
-                  )}
-                </button>
+                  {isSubmitting ? 'Updating...' : 'Update Torrent'}
+                </Button>
               </div>
             </form>
           </div>

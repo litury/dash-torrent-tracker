@@ -1,7 +1,9 @@
 import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Plus } from 'lucide-react'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import { useSdk } from '../../../shared/hooks/useSdk'
+import { Button } from '../../../shared/components/Button'
 import type { WalletInfo } from '../../wallet/types'
 
 // Validation regex patterns (can be copied to contract)
@@ -306,17 +308,14 @@ export const CreateTorrent = ({ walletInfo }: CreateTorrentProps) => {
             )}
 
             <div className="pt-6 flex justify-end">
-              <button
-                type="button"
+              <Button
                 onClick={handleSubmitAsync}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-dash-white bg-dash-blue hover:bg-dash-blue-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dash-blue transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-dash-blue"
                 disabled={!isFormValid}
+                size="big"
+                icon={<Plus />}
               >
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
                 Create Torrent
-              </button>
+              </Button>
             </div>
           </>
         )}

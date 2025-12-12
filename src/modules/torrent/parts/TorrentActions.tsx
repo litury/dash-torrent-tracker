@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { MoreVertical, ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { Button } from '../../../shared/components/Button'
 import type { Torrent } from '../types'
 
 interface TorrentActionsProps {
@@ -35,17 +36,19 @@ export const TorrentActions = ({ torrent, isOwner, onEdit, onDelete }: TorrentAc
 
   return (
     <div className="relative" ref={ref}>
-      <button
+      <Button
+        variant="ghost"
+        color="darkBlue"
+        size="small"
+        iconOnly
+        icon={<MoreVertical />}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
           setOpen(!open)
         }}
-        className="p-2 text-dash-dark-75 hover:text-dash-dark dark:text-dash-white-75 dark:hover:text-dash-white hover:bg-dash-dark-5 dark:hover:bg-dash-white-15 rounded-lg transition-colors"
         title="Actions"
-      >
-        <MoreVertical className="w-4 h-4" />
-      </button>
+      />
 
       {open && (
         <div className="absolute right-0 mt-1 w-44 bg-dash-white dark:bg-dash-space-cadet border border-dash-dark-15 dark:border-dash-white-15 rounded-lg shadow-lg z-20">
