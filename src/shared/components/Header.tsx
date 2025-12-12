@@ -52,12 +52,14 @@ export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, o
             </button>
 
             {title && (
-              <h1 className="text-lg font-semibold text-dash-dark dark:text-dash-white">
+              <h1 className="text-lg font-semibold text-dash-dark dark:text-dash-white flex items-center">
                 {title}
-                {count !== undefined && (
+                {count !== undefined ? (
                   <span className="ml-2 text-sm font-normal text-dash-dark-75 dark:text-dash-white-75">
                     ({count})
                   </span>
+                ) : (
+                  <span className="ml-2 inline-block w-8 h-5 rounded bg-dash-dark-15 dark:bg-dash-white-15 animate-pulse" />
                 )}
               </h1>
             )}
