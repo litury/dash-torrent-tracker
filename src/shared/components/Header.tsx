@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Menu, Sun, Moon, Search } from 'lucide-react'
+import { Menu, Sun, Moon, Search, LayoutGrid, List, User, ArrowDown, ArrowUp } from 'lucide-react'
 import { ConnectWallet } from '../../modules/wallet/components/ConnectWallet'
 import { Button } from './Button'
 import { SearchInput } from './SearchInput'
@@ -15,9 +15,13 @@ interface HeaderProps {
   onSearchChange?: (_query: string) => void
   showMyTorrents?: boolean
   onShowMyTorrentsChange?: (_show: boolean) => void
+  viewMode?: 'grid' | 'list'
+  onViewModeChange?: (_mode: 'grid' | 'list') => void
+  sortOrder?: 'desc' | 'asc'
+  onSortOrderChange?: (_order: 'desc' | 'asc') => void
 }
 
-export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, searchQuery, onSearchChange, showMyTorrents, onShowMyTorrentsChange }: HeaderProps) => {
+export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, searchQuery, onSearchChange, showMyTorrents, onShowMyTorrentsChange, viewMode, onViewModeChange, sortOrder, onSortOrderChange }: HeaderProps) => {
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -43,10 +47,10 @@ export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, s
   const toggleTheme = () => setIsDark(!isDark)
 
   return (
-    <header className="sticky top-0 z-10 bg-dash-white dark:bg-dash-dark border-b border-dash-dark-15 dark:border-dash-white-15">
+    <header className="bg-dash-white dark:bg-dash-dark border-b border-dash-dark-15 dark:border-dash-white-15">
       <div className="px-4 sm:px-6 lg:px-8 h-12 flex items-center">
         <div className="flex items-center justify-between w-full">
-          {/* Left side: Menu + Title + Checkbox */}
+          {/* Left side: Menu + Title + View Mode + My Filter */}
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -60,28 +64,78 @@ export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, s
             />
 
             {title && (
-              <h1 className="text-lg font-semibold text-dash-dark dark:text-dash-white flex items-center gap-1.5">
+              <h1 className="text-xs font-bold text-dash-dark dark:text-dash-white uppercase tracking-widest flex items-center gap-1.5">
                 {title}
                 {count !== undefined ? (
-                  <span className="text-sm font-normal text-dash-dark-75 dark:text-dash-white-75 tabular-nums inline-block min-w-[2.5rem] text-center">
+                  <span className="text-xs font-bold text-dash-dark-75 dark:text-dash-white-75 tabular-nums inline-block min-w-[2.5rem] text-center">
                     ({count})
                   </span>
                 ) : onShowMyTorrentsChange !== undefined ? (
-                  <span className="h-5 min-w-[2.5rem] rounded bg-dash-dark-15 dark:bg-dash-white-15 animate-pulse inline-block" />
+                  <span className="h-4 min-w-[2.5rem] rounded bg-dash-dark-15 dark:bg-dash-white-15 animate-pulse inline-block" />
                 ) : null}
               </h1>
             )}
 
-            {/* My Torrents checkbox filter */}
+            {/* View mode toggle */}
+            {onViewModeChange && (
+              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
+                <button
+                  onClick={() => onViewModeChange('grid')}
+                  className={`p-1.5 rounded transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
+                      : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
+                  }`}
+                  aria-label="Grid view"
+                  title="Grid view"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => onViewModeChange('list')}
+                  className={`p-1.5 rounded transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
+                      : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
+                  }`}
+                  aria-label="List view"
+                  title="List view"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* My Torrents filter button */}
             {walletInfo.connected && onShowMyTorrentsChange !== undefined && (
-              <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15 hover:bg-dash-dark-15 dark:hover:bg-dash-white-25 transition-colors cursor-pointer text-sm text-dash-dark dark:text-dash-white">
-                <input
-                  type="checkbox"
-                  checked={showMyTorrents}
-                  onChange={(e) => onShowMyTorrentsChange(e.target.checked)}
-                />
-                <span>My</span>
-              </label>
+              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
+                <button
+                  onClick={() => onShowMyTorrentsChange(!showMyTorrents)}
+                  className={`p-1.5 rounded transition-colors ${
+                    showMyTorrents
+                      ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
+                      : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
+                  }`}
+                  aria-label="Show my torrents"
+                  title="My torrents"
+                >
+                  <User className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Sort order toggle */}
+            {onSortOrderChange && (
+              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
+                <button
+                  onClick={() => onSortOrderChange(sortOrder === 'desc' ? 'asc' : 'desc')}
+                  className="p-1.5 rounded transition-colors text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white"
+                  aria-label={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
+                  title={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
+                >
+                  {sortOrder === 'desc' ? <ArrowDown className="w-4 h-4" /> : <ArrowUp className="w-4 h-4" />}
+                </button>
+              </div>
             )}
           </div>
 

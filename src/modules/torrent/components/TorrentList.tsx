@@ -8,6 +8,8 @@ import type { WalletInfo } from '../../wallet/types'
 import { createTorrent } from '../types'
 import { TorrentCard } from './TorrentCard'
 import { TorrentCardSkeleton } from './TorrentCardSkeleton'
+import { TorrentListItem } from './TorrentListItem'
+import { TorrentListItemSkeleton } from './TorrentListItemSkeleton'
 
 interface OutletContext {
   walletInfo: WalletInfo
@@ -17,10 +19,12 @@ interface OutletContext {
   setTorrentCount: (count: number | undefined) => void
   showMyTorrents: boolean
   refreshKey: number
+  viewMode: 'grid' | 'list'
+  sortOrder: 'desc' | 'asc'
 }
 
 export const TorrentList = () => {
-  const { walletInfo, searchQuery, setPageTitle, setTorrentCount, showMyTorrents, refreshKey } = useOutletContext<OutletContext>()
+  const { walletInfo, searchQuery, setPageTitle, setTorrentCount, showMyTorrents, refreshKey, viewMode, sortOrder } = useOutletContext<OutletContext>()
   const [torrents, setTorrents] = useState<Torrent[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -78,7 +82,11 @@ export const TorrentList = () => {
         ? _torrent.owner === walletInfo.currentIdentity
         : true
     )
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .sort((a, b) =>
+      sortOrder === 'desc'
+        ? b.timestamp.getTime() - a.timestamp.getTime()  // Новые первыми
+        : a.timestamp.getTime() - b.timestamp.getTime()  // Старые первыми
+    )
 
   // Set title immediately (doesn't depend on loading)
   useEffect(() => {
@@ -94,13 +102,21 @@ export const TorrentList = () => {
 
   return (
     <div className="space-y-6">
-      {/* Loading state — skeleton grid */}
+      {/* Loading state — skeleton grid or list */}
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <TorrentCardSkeleton key={i} />
-          ))}
-        </div>
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <TorrentCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <TorrentListItemSkeleton key={i} />
+            ))}
+          </div>
+        )
       )}
 
       {/* Empty state */}
@@ -118,17 +134,29 @@ export const TorrentList = () => {
         </div>
       )}
 
-      {/* Grid of cards */}
+      {/* Grid or List of torrents */}
       {!loading && !error && filteredTorrents.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTorrents.map((_torrent) => (
-            <TorrentCard
-              key={_torrent.identifier}
-              torrent={_torrent}
-              walletInfo={walletInfo}
-            />
-          ))}
-        </div>
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTorrents.map((_torrent) => (
+              <TorrentCard
+                key={_torrent.identifier}
+                torrent={_torrent}
+                walletInfo={walletInfo}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {filteredTorrents.map((_torrent) => (
+              <TorrentListItem
+                key={_torrent.identifier}
+                torrent={_torrent}
+                walletInfo={walletInfo}
+              />
+            ))}
+          </div>
+        )
       )}
 
       {/* Error state */}

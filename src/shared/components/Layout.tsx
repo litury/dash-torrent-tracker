@@ -17,6 +17,20 @@ export const Layout = () => {
   const [showMyTorrents, setShowMyTorrents] = useState(false)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('viewMode')
+      return (saved as 'grid' | 'list') || 'grid'
+    }
+    return 'grid'
+  })
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sortOrder')
+      return (saved as 'desc' | 'asc') || 'desc'
+    }
+    return 'desc'
+  })
 
   // Reset showMyTorrents when wallet disconnects
   useEffect(() => {
@@ -24,6 +38,20 @@ export const Layout = () => {
       setShowMyTorrents(false)
     }
   }, [walletInfo.connected, showMyTorrents])
+
+  // Save viewMode to localStorage when changed
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('viewMode', viewMode)
+    }
+  }, [viewMode])
+
+  // Save sortOrder to localStorage when changed
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sortOrder', sortOrder)
+    }
+  }, [sortOrder])
 
   // Reset title when navigating away from home
   const isHomePage = location.pathname === '/'
@@ -33,7 +61,7 @@ export const Layout = () => {
   const showFilters = isHomePage
 
   return (
-    <div className="min-h-screen bg-dash-dark-5 dark:bg-dash-dark">
+    <div className="h-screen flex flex-col bg-dash-dark-5 dark:bg-dash-dark">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -42,7 +70,7 @@ export const Layout = () => {
         isWalletConnected={walletInfo.connected}
         onAddTorrent={() => setCreateModalOpen(true)}
       />
-      <div className="lg:pl-64 pb-16">
+      <div className="lg:pl-64 flex flex-col h-full">
         <Header
           walletInfo={walletInfo}
           setWalletInfo={setWalletInfo}
@@ -53,12 +81,18 @@ export const Layout = () => {
           onSearchChange={setSearchQuery}
           showMyTorrents={showFilters ? showMyTorrents : undefined}
           onShowMyTorrentsChange={showFilters ? setShowMyTorrents : undefined}
+          viewMode={showFilters ? viewMode : undefined}
+          onViewModeChange={showFilters ? setViewMode : undefined}
+          sortOrder={showFilters ? sortOrder : undefined}
+          onSortOrderChange={showFilters ? setSortOrder : undefined}
         />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Outlet context={{ walletInfo, setWalletInfo, activeCategory, searchQuery, setPageTitle, setTorrentCount, showMyTorrents, refreshKey }} />
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <Outlet context={{ walletInfo, setWalletInfo, activeCategory, searchQuery, setPageTitle, setTorrentCount, showMyTorrents, refreshKey, viewMode, sortOrder }} />
+          </div>
         </main>
+        <Footer />
       </div>
-      <Footer />
 
       <CreateTorrentModal
         walletInfo={walletInfo}

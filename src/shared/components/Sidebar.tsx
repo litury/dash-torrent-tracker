@@ -4,8 +4,7 @@ import { Button } from './Button'
 import dashLogo from '../../assets/dash_logo.svg'
 
 const CATEGORIES = [
-  { id: 'all', label: 'All Torrents', icon: LayoutGrid, disabled: false },
-  { id: 'popular', label: 'Popular', icon: TrendingUp, disabled: true },
+  { id: 'all', label: 'All', icon: LayoutGrid, disabled: false },
   { id: 'video', label: 'Video', icon: Video, disabled: true },
   { id: 'music', label: 'Music', icon: Music, disabled: true },
   { id: 'apps', label: 'Apps', icon: Package, disabled: true },
@@ -58,7 +57,7 @@ export const Sidebar = ({
       {/* Categories */}
       <nav className="flex-1 overflow-y-auto">
         <div className="px-6 py-2 text-xs font-medium text-dash-dark-75 dark:text-dash-white-75 uppercase tracking-wider">
-          Categories
+    
         </div>
         {CATEGORIES.map(({ id, label, icon: Icon, disabled }) => (
           <button

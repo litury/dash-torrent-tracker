@@ -11,6 +11,8 @@ export interface OutletContext {
   setTorrentCount: (count: number | undefined) => void
   showMyTorrents: boolean
   refreshKey: number
+  viewMode: 'grid' | 'list'
+  sortOrder: 'desc' | 'asc'
 }
 
 export const HomePage = () => {
