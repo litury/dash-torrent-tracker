@@ -5,7 +5,6 @@ import dashLogo from '../../assets/dash_logo.svg'
 
 const CATEGORIES = [
   { id: 'all', label: 'All Torrents', icon: LayoutGrid, disabled: false },
-  { id: 'recent', label: 'Recent', icon: Clock, disabled: true },
   { id: 'popular', label: 'Popular', icon: TrendingUp, disabled: true },
   { id: 'video', label: 'Video', icon: Video, disabled: true },
   { id: 'music', label: 'Music', icon: Music, disabled: true },
