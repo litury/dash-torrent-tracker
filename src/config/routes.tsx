@@ -9,7 +9,7 @@ export interface OutletContext {
   searchQuery: string
   setPageTitle: (title: string | undefined) => void
   setTorrentCount: (count: number | undefined) => void
-  ownerFilter: 'all' | 'mine'
+  showMyTorrents: boolean
   refreshKey: number
 }
 

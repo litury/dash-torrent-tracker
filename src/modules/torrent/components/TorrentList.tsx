@@ -15,12 +15,12 @@ interface OutletContext {
   searchQuery: string
   setPageTitle: (title: string | undefined) => void
   setTorrentCount: (count: number | undefined) => void
-  ownerFilter: 'all' | 'mine'
+  showMyTorrents: boolean
   refreshKey: number
 }
 
 export const TorrentList = () => {
-  const { walletInfo, searchQuery, setPageTitle, setTorrentCount, ownerFilter, refreshKey } = useOutletContext<OutletContext>()
+  const { walletInfo, searchQuery, setPageTitle, setTorrentCount, showMyTorrents, refreshKey } = useOutletContext<OutletContext>()
   const [torrents, setTorrents] = useState<Torrent[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -74,7 +74,7 @@ export const TorrentList = () => {
       _torrent.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .filter((_torrent) =>
-      ownerFilter === 'mine'
+      showMyTorrents
         ? _torrent.owner === walletInfo.currentIdentity
         : true
     )
@@ -82,15 +82,9 @@ export const TorrentList = () => {
 
   // Set title immediately (doesn't depend on loading)
   useEffect(() => {
-    let title = 'All Torrents'
-    if (searchQuery) {
-      title = `Results for "${searchQuery}"`
-    } else if (ownerFilter === 'mine') {
-      title = 'My Torrents'
-    }
-    setPageTitle(title)
+    setPageTitle('All Torrents')
     return () => setPageTitle(undefined)
-  }, [searchQuery, ownerFilter, setPageTitle])
+  }, [setPageTitle])
 
   // Set count only after loading (undefined shows skeleton)
   useEffect(() => {

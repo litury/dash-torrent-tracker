@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
@@ -14,14 +14,23 @@ export const Layout = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [pageTitle, setPageTitle] = useState<string | undefined>()
   const [torrentCount, setTorrentCount] = useState<number | undefined>()
-  const [ownerFilter, setOwnerFilter] = useState<'all' | 'mine'>('all')
+  const [showMyTorrents, setShowMyTorrents] = useState(false)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
+  // Reset showMyTorrents when wallet disconnects
+  useEffect(() => {
+    if (!walletInfo.connected && showMyTorrents) {
+      setShowMyTorrents(false)
+    }
+  }, [walletInfo.connected, showMyTorrents])
+
   // Reset title when navigating away from home
   const isHomePage = location.pathname === '/'
-  const displayTitle = isHomePage ? pageTitle : undefined
+  const isTorrentPage = location.pathname.startsWith('/torrent/')
+  const displayTitle = isHomePage ? pageTitle : isTorrentPage ? 'Torrent Details' : undefined
   const displayCount = isHomePage ? torrentCount : undefined
+  const showFilters = isHomePage
 
   return (
     <div className="min-h-screen bg-dash-dark-5 dark:bg-dash-dark">
@@ -30,8 +39,6 @@ export const Layout = () => {
         onClose={() => setSidebarOpen(false)}
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
         isWalletConnected={walletInfo.connected}
         onAddTorrent={() => setCreateModalOpen(true)}
       />
@@ -42,11 +49,13 @@ export const Layout = () => {
           onMenuClick={() => setSidebarOpen(true)}
           title={displayTitle}
           count={displayCount}
-          ownerFilter={ownerFilter}
-          onOwnerFilterChange={setOwnerFilter}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          showMyTorrents={showFilters ? showMyTorrents : undefined}
+          onShowMyTorrentsChange={showFilters ? setShowMyTorrents : undefined}
         />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Outlet context={{ walletInfo, setWalletInfo, activeCategory, searchQuery, setPageTitle, setTorrentCount, ownerFilter, refreshKey }} />
+          <Outlet context={{ walletInfo, setWalletInfo, activeCategory, searchQuery, setPageTitle, setTorrentCount, showMyTorrents, refreshKey }} />
         </main>
       </div>
       <Footer />
