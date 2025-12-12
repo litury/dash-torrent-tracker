@@ -82,6 +82,16 @@
   color: var(--color-dash-white-75);
 }
 
+/* Interactive elements - cursor pointer */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}
+
+a[href] {
+  cursor: pointer;
+}
+
 /* Text truncation with ellipsis */
 .text-truncate {
   overflow: hidden;
