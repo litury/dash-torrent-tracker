@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Typography */
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* === PRIMARY COLORS (из Figma) === */
+  --color-dash-blue: #4C7EFF;
+  --color-dash-dark: #0C1C33;
+  --color-dash-turquoise: #60F6D2;
+  --color-dash-light-blue: #6B95FF;
+  --color-dash-space-cadet: #142A4A;
+
+  /* === BLUE variants (opacity) === */
+  --color-dash-blue-75: rgba(76, 126, 255, 0.75);
+  --color-dash-blue-15: rgba(76, 126, 255, 0.15);
+  --color-dash-blue-5: rgba(76, 126, 255, 0.05);
+
+  /* === DARK variants (opacity) === */
+  --color-dash-dark-75: rgba(12, 28, 51, 0.75);
+  --color-dash-dark-15: rgba(12, 28, 51, 0.15);
+  --color-dash-dark-5: rgba(12, 28, 51, 0.05);
+
+  /* === TURQUOISE variants (opacity) === */
+  --color-dash-turquoise-75: rgba(96, 246, 210, 0.75);
+  --color-dash-turquoise-15: rgba(96, 246, 210, 0.15);
+  --color-dash-turquoise-5: rgba(96, 246, 210, 0.05);
+
+  /* === WHITE variants (opacity) === */
+  --color-dash-white: #FFFFFF;
+  --color-dash-white-75: rgba(255, 255, 255, 0.75);
+  --color-dash-white-15: rgba(255, 255, 255, 0.15);
+  --color-dash-white-5: rgba(255, 255, 255, 0.05);
+
+  /* === STATE: Success === */
+  --color-success: #40BF40;
+  --color-success-75: rgba(64, 191, 64, 0.75);
+  --color-success-15: rgba(64, 191, 64, 0.15);
+  --color-success-5: rgba(64, 191, 64, 0.05);
+
+  /* === STATE: Error === */
+  --color-error: #CD2E00;
+  --color-error-75: rgba(205, 46, 0, 0.75);
+  --color-error-15: rgba(205, 46, 0, 0.15);
+  --color-error-5: rgba(205, 46, 0, 0.05);
+
+  /* === STATE: Warning === */
+  --color-warning: #F98F12;
+  --color-warning-75: rgba(249, 143, 18, 0.75);
+  --color-warning-15: rgba(249, 143, 18, 0.15);
+  --color-warning-5: rgba(249, 143, 18, 0.05);
+
+  /* === Shadows === */
+  --shadow-sm: 0 0 50px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 0 75px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 0 125px rgba(0, 0, 0, 0.25);
+}
+
+/* Sonner toasts - design system */
+[data-sonner-toaster] [data-sonner-toast] {
+  font-family: var(--font-sans);
+  background: var(--color-dash-white);
+  border: 1px solid var(--color-dash-dark-15);
+  color: var(--color-dash-dark);
+  border-radius: 12px;
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast] {
+  background: var(--color-dash-space-cadet);
+  border-color: var(--color-dash-white-15);
+  color: var(--color-dash-white);
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast] [data-title] {
+  color: var(--color-dash-white);
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast] [data-description] {
+  color: var(--color-dash-white-75);
+}
+
+/* Interactive elements - cursor pointer */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}
+
+a[href] {
+  cursor: pointer;
+}
+
+/* Text truncation with ellipsis */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Multi-line text clamp with word break */
+.text-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
+}

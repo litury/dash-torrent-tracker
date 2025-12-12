@@ -45,3 +45,12 @@ yarn-error.*
 /.react-router/
 /build/
 doc
+
+# Lock files
+package-lock.json
+
+# Editor directories
+.vscode/
+
+# Logs
+*.log
