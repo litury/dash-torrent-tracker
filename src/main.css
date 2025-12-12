@@ -81,3 +81,19 @@
 .dark [data-sonner-toaster] [data-sonner-toast] [data-description] {
   color: var(--color-dash-white-75);
 }
+
+/* Text truncation with ellipsis */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Multi-line text clamp with word break */
+.text-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
+}
