@@ -79,23 +79,23 @@ export const TorrentList = () => {
     )
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 
-  // Update header title and count
+  // Set title immediately (doesn't depend on loading)
   useEffect(() => {
-    if (!loading && !error) {
-      let title = 'All Torrents'
-      if (searchQuery) {
-        title = `Results for "${searchQuery}"`
-      } else if (ownerFilter === 'mine') {
-        title = 'My Torrents'
-      }
-      setPageTitle(title)
-      setTorrentCount(filteredTorrents.length)
+    let title = 'All Torrents'
+    if (searchQuery) {
+      title = `Results for "${searchQuery}"`
+    } else if (ownerFilter === 'mine') {
+      title = 'My Torrents'
     }
-    return () => {
-      setPageTitle(undefined)
-      setTorrentCount(undefined)
-    }
-  }, [loading, error, searchQuery, ownerFilter, filteredTorrents.length, setPageTitle, setTorrentCount])
+    setPageTitle(title)
+    return () => setPageTitle(undefined)
+  }, [searchQuery, ownerFilter, setPageTitle])
+
+  // Set count only after loading (undefined shows skeleton)
+  useEffect(() => {
+    setTorrentCount(!loading && !error ? filteredTorrents.length : undefined)
+    return () => setTorrentCount(undefined)
+  }, [loading, error, filteredTorrents.length, setTorrentCount])
 
   return (
     <div className="space-y-6">
