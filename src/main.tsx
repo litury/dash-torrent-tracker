@@ -5,7 +5,7 @@ import { Toaster } from 'sonner'
 import './main.css'
 
 import { Layout } from './shared/components/Layout'
-import { HomePage, AddTorrentPage } from './config/routes'
+import { HomePage, AddTorrentPage, TorrentPage } from './config/routes'
 
 const App = () => (
   <>
@@ -14,6 +14,7 @@ const App = () => (
         <Route element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="add" element={<AddTorrentPage />} />
+          <Route path="torrent/:id" element={<TorrentPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

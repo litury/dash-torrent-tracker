@@ -1,5 +1,6 @@
 import { useOutletContext } from 'react-router-dom'
-import { TorrentTable } from '../modules/torrent/components/TorrentTable'
+import { TorrentList } from '../modules/torrent/components/TorrentList'
+import { TorrentPage } from '../modules/torrent/pages/TorrentPage'
 import { CreateTorrent } from '../modules/torrent/components/CreateTorrent'
 import type { WalletInfo } from '../modules/wallet/types'
 
@@ -8,10 +9,13 @@ export interface OutletContext {
   setWalletInfo: (_info: WalletInfo) => void
   activeCategory: string
   searchQuery: string
+  setPageTitle: (title: string | undefined) => void
+  setTorrentCount: (count: number | undefined) => void
+  ownerFilter: 'all' | 'mine'
 }
 
 export const HomePage = () => {
-  return <TorrentTable />
+  return <TorrentList />
 }
 
 export const AddTorrentPage = () => {
@@ -19,7 +23,4 @@ export const AddTorrentPage = () => {
   return <CreateTorrent walletInfo={walletInfo} />
 }
 
-export const routes = [
-  { path: '/', element: <HomePage /> },
-  { path: '/add', element: <AddTorrentPage /> }
-]
+export { TorrentPage }
