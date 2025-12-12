@@ -1,6 +1,5 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { Plus, LayoutGrid, TrendingUp, Video, Music, Package, BookOpen, MoreHorizontal } from 'lucide-react'
-import { SearchInput } from './SearchInput'
 import { Button } from './Button'
 import dashLogo from '../../assets/dash_logo.svg'
 
@@ -19,8 +18,6 @@ interface SidebarProps {
   onClose: () => void
   activeCategory: string
   onCategoryChange: (_id: string) => void
-  searchQuery: string
-  onSearchChange: (_query: string) => void
   isWalletConnected: boolean
   onAddTorrent: () => void
 }
@@ -30,8 +27,6 @@ export const Sidebar = ({
   onClose,
   activeCategory,
   onCategoryChange,
-  searchQuery,
-  onSearchChange,
   isWalletConnected,
   onAddTorrent
 }: SidebarProps) => {
@@ -59,12 +54,6 @@ export const Sidebar = ({
           Torrent Tracker
         </span>
       </NavLink>
-
-      {/* Search */}
-      <div className="p-4">
-        <SearchInput value={searchQuery} onChange={onSearchChange} />
-      </div>
-
 
       {/* Categories */}
       <nav className="flex-1 overflow-y-auto">

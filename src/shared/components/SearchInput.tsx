@@ -5,12 +5,14 @@ interface SearchInputProps {
   value: string
   onChange: (_value: string) => void
   placeholder?: string
+  onClose?: () => void
 }
 
 export const SearchInput = ({
   value,
   onChange,
-  placeholder = 'Search...'
+  placeholder = 'Search...',
+  onClose
 }: SearchInputProps) => {
   return (
     <div className="relative">
@@ -26,7 +28,10 @@ export const SearchInput = ({
       {value && (
         <button
           type="button"
-          onClick={() => onChange('')}
+          onClick={() => {
+            onChange('')
+            onClose?.()
+          }}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white transition-colors"
           aria-label="Clear search"
         >
