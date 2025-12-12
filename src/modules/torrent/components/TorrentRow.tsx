@@ -2,12 +2,12 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, Pencil, Trash2, ExternalLink, MoreVertical } from 'lucide-react'
 import type { Torrent } from '../types'
 import type { WalletInfo } from '../../wallet/types'
-import { UpdateTorrentModal } from '../parts/UpdateTorrentModal'
-import { DeleteTorrentModal } from '../parts/DeleteTorrentModal'
 
 interface TorrentRowProps {
   torrent: Torrent
   walletInfo: WalletInfo
+  onEdit: (_torrent: Torrent) => void
+  onDelete: (_torrent: Torrent) => void
 }
 
 const formatMagnetLink = (_magnet: string): string => {
@@ -34,9 +34,7 @@ const formatDate = (_timestamp: Date): string => {
   }
 }
 
-export const TorrentRow = ({ torrent, walletInfo }: TorrentRowProps) => {
-  const [showUpdateModal, setShowUpdateModal] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
+export const TorrentRow = ({ torrent, walletInfo, onEdit, onDelete }: TorrentRowProps) => {
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -50,28 +48,14 @@ export const TorrentRow = ({ torrent, walletInfo }: TorrentRowProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleUpdate = () => {
+  const handleEdit = () => {
     setShowDropdown(false)
-    setShowUpdateModal(true)
+    onEdit(torrent)
   }
 
   const handleDelete = () => {
     setShowDropdown(false)
-    setShowDeleteModal(true)
-  }
-
-  const handleUpdateTorrentAsync = async (_identifier: string) => {
-    console.log('Updating torrent:', _identifier)
-    await new Promise((_resolve) => setTimeout(_resolve, 1000))
-    setShowUpdateModal(false)
-    window.location.reload()
-  }
-
-  const handleDeleteTorrentAsync = async (_identifier: string) => {
-    console.log('Deleting torrent:', _identifier)
-    await new Promise((_resolve) => setTimeout(_resolve, 1000))
-    setShowDeleteModal(false)
-    window.location.reload()
+    onDelete(torrent)
   }
 
   const isOwner = walletInfo.connected && torrent.owner === walletInfo.currentIdentity
@@ -139,7 +123,7 @@ export const TorrentRow = ({ torrent, walletInfo }: TorrentRowProps) => {
                 {isOwner && (
                   <>
                     <button
-                      onClick={handleUpdate}
+                      onClick={handleEdit}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-dash-dark dark:text-dash-white hover:bg-dash-dark-5 dark:hover:bg-dash-white-15 transition-colors"
                     >
                       <Pencil className="w-4 h-4" />
@@ -159,22 +143,6 @@ export const TorrentRow = ({ torrent, walletInfo }: TorrentRowProps) => {
           </div>
         </td>
       </tr>
-
-      <UpdateTorrentModal
-        torrent={torrent}
-        walletInfo={walletInfo}
-        isOpen={showUpdateModal}
-        onClose={() => setShowUpdateModal(false)}
-        onUpdate={handleUpdateTorrentAsync}
-      />
-
-      <DeleteTorrentModal
-        torrent={torrent}
-        walletInfo={walletInfo}
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onDelete={handleDeleteTorrentAsync}
-      />
     </>
   )
 }

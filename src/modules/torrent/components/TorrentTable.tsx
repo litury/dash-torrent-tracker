@@ -7,6 +7,8 @@ import type { Torrent } from '../types'
 import type { WalletInfo } from '../../wallet/types'
 import { createTorrent } from '../types'
 import { TorrentRow } from './TorrentRow'
+import { UpdateTorrentModal } from '../parts/UpdateTorrentModal'
+import { DeleteTorrentModal } from '../parts/DeleteTorrentModal'
 
 interface OutletContext {
   walletInfo: WalletInfo
@@ -19,6 +21,33 @@ export const TorrentTable = () => {
   const [torrents, setTorrents] = useState<Torrent[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [editingTorrent, setEditingTorrent] = useState<Torrent | null>(null)
+  const [deletingTorrent, setDeletingTorrent] = useState<Torrent | null>(null)
+
+  const handleTorrentUpdated = async (identifier: string) => {
+    const sdk = useSdk()
+    const where = [['$id', '==', identifier]]
+    const [document] = await sdk.documents.query(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, where)
+
+    if (document) {
+      const properties = document.properties as { name: string; description: string; magnet: string }
+      const updatedTorrent = createTorrent(
+        document.id.base58(),
+        properties.name,
+        properties.description,
+        properties.magnet,
+        document.ownerId.base58(),
+        new Date(parseInt(document.updatedAt?.toString() ?? '0'))
+      )
+      setTorrents(prev => prev.map(t => t.identifier === identifier ? updatedTorrent : t))
+    }
+    setEditingTorrent(null)
+  }
+
+  const handleTorrentDeleted = (identifier: string) => {
+    setTorrents(prev => prev.filter(t => t.identifier !== identifier))
+    setDeletingTorrent(null)
+  }
 
   useEffect(() => {
     const fetchTorrentsAsync = async () => {
@@ -125,7 +154,13 @@ export const TorrentTable = () => {
             </thead>
             <tbody className="bg-dash-white dark:bg-dash-space-cadet divide-y divide-dash-dark-15 dark:divide-dash-white-15">
               {filteredTorrents.map((_torrent) => (
-                <TorrentRow key={_torrent.identifier} torrent={_torrent} walletInfo={walletInfo} />
+                <TorrentRow
+                  key={_torrent.identifier}
+                  torrent={_torrent}
+                  walletInfo={walletInfo}
+                  onEdit={setEditingTorrent}
+                  onDelete={setDeletingTorrent}
+                />
               ))}
             </tbody>
           </table>
@@ -143,6 +178,26 @@ export const TorrentTable = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {editingTorrent && (
+        <UpdateTorrentModal
+          torrent={editingTorrent}
+          walletInfo={walletInfo}
+          isOpen={!!editingTorrent}
+          onClose={() => setEditingTorrent(null)}
+          onUpdate={handleTorrentUpdated}
+        />
+      )}
+
+      {deletingTorrent && (
+        <DeleteTorrentModal
+          torrent={deletingTorrent}
+          walletInfo={walletInfo}
+          isOpen={!!deletingTorrent}
+          onClose={() => setDeletingTorrent(null)}
+          onDelete={handleTorrentDeleted}
+        />
       )}
     </div>
   )
