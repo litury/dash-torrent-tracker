@@ -1,4 +1,7 @@
-import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { clsx } from 'clsx'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import type { Torrent } from '../types'
@@ -25,33 +28,24 @@ export const UpdateTorrentModal = ({
   onClose,
   onUpdate
 }: UpdateTorrentModalProps) => {
-  const [form, setForm] = useState<UpdateForm>({
-    name: '',
-    description: '',
-    magnet: ''
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting }
+  } = useForm<UpdateForm>()
 
   useEffect(() => {
     if (torrent) {
-      setForm({
+      reset({
         name: torrent.name || '',
         description: torrent.description || '',
         magnet: torrent.magnet || ''
       })
     }
-  }, [torrent])
+  }, [torrent, reset])
 
-  const handleInputChange = (_key: keyof UpdateForm, _e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [_key]: _e.target.value })
-  }
-
-  const handleSubmitAsync = async (_e: FormEvent) => {
-    _e.preventDefault()
-    setLoading(true)
-    setError(null)
-
+  const onSubmit = async (data: UpdateForm) => {
     try {
       const sdk = useSdk()
 
@@ -64,14 +58,7 @@ export const UpdateTorrentModal = ({
         DATA_CONTRACT_IDENTIFIER
       )
 
-      const data = {
-        name: form.name,
-        description: form.description,
-        magnet: form.magnet
-      }
-
       const where = [['$id', '==', torrent.identifier]]
-
       const [document] = await sdk.documents.query(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, where)
 
       if (!document) {
@@ -88,17 +75,24 @@ export const UpdateTorrentModal = ({
 
       await (window as any).dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
 
+      toast.success('Torrent updated successfully')
       await onUpdate(torrent.identifier)
       onClose()
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      const message = e instanceof Error ? e.message : String(e)
+      toast.error(message)
       console.error('Error during submit:', e)
-    } finally {
-      setLoading(false)
     }
   }
 
   if (!isOpen) return null
+
+  const inputClassName = clsx(
+    'w-full px-4 py-2 border rounded-lg transition-colors',
+    'border-dash-dark-15 dark:border-dash-white-15',
+    'focus:border-dash-blue focus:outline-none',
+    'dark:bg-dash-space-cadet dark:text-dash-white'
+  )
 
   return (
     <>
@@ -129,25 +123,7 @@ export const UpdateTorrentModal = ({
               </p>
             </div>
 
-            <form onSubmit={handleSubmitAsync} className="p-6 space-y-6">
-              {error && (
-                <div className="rounded-lg bg-error-5 dark:bg-error-15 p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-error" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-error">Error updating torrent</h3>
-                      <div className="mt-2 text-sm text-error-75">
-                        <p>{error}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
+            <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
               <div>
                 <label htmlFor="update-name" className="block text-sm font-medium text-dash-dark dark:text-dash-white mb-2">
                   Name
@@ -155,11 +131,9 @@ export const UpdateTorrentModal = ({
                 <input
                   type="text"
                   id="update-name"
-                  className="w-full px-4 py-2 border border-dash-dark-15 dark:border-dash-white-15 rounded-lg focus:border-dash-blue focus:outline-none dark:bg-dash-space-cadet dark:text-dash-white transition-colors"
-                  onChange={(_e) => handleInputChange('name', _e)}
-                  value={form.name}
+                  className={inputClassName}
                   placeholder="Enter torrent name"
-                  required
+                  {...register('name', { required: true })}
                 />
               </div>
 
@@ -170,11 +144,9 @@ export const UpdateTorrentModal = ({
                 <textarea
                   id="update-description"
                   rows={3}
-                  className="w-full px-4 py-2 border border-dash-dark-15 dark:border-dash-white-15 rounded-lg focus:border-dash-blue focus:outline-none dark:bg-dash-space-cadet dark:text-dash-white transition-colors resize-none"
-                  onChange={(_e) => handleInputChange('description', _e)}
-                  value={form.description}
+                  className={clsx(inputClassName, 'resize-none')}
                   placeholder="Describe your torrent content"
-                  required
+                  {...register('description', { required: true })}
                 />
               </div>
 
@@ -185,11 +157,9 @@ export const UpdateTorrentModal = ({
                 <input
                   type="text"
                   id="update-magnet"
-                  className="w-full px-4 py-2 border border-dash-dark-15 dark:border-dash-white-15 rounded-lg focus:border-dash-blue focus:outline-none dark:bg-dash-space-cadet dark:text-dash-white transition-colors font-mono text-sm"
-                  onChange={(_e) => handleInputChange('magnet', _e)}
-                  value={form.magnet}
+                  className={clsx(inputClassName, 'font-mono text-sm')}
                   placeholder="magnet:?xt=urn:btih:...."
-                  required
+                  {...register('magnet', { required: true })}
                 />
               </div>
 
@@ -198,16 +168,20 @@ export const UpdateTorrentModal = ({
                   type="button"
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-dash-dark dark:text-dash-white bg-dash-white dark:bg-dash-space-cadet border border-dash-dark-15 dark:border-dash-white-15 rounded-lg hover:bg-dash-dark-5 dark:hover:bg-dash-white-15 transition-colors"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-dash-white bg-dash-blue rounded-lg hover:bg-dash-blue-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dash-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                  disabled={loading}
+                  className={clsx(
+                    'px-4 py-2 text-sm font-medium text-dash-white bg-dash-blue rounded-lg',
+                    'hover:bg-dash-blue-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dash-blue',
+                    'transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center'
+                  )}
+                  disabled={isSubmitting}
                 >
-                  {loading ? (
+                  {isSubmitting ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-dash-white" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

@@ -1,4 +1,7 @@
-import { useState, type ChangeEvent } from 'react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { clsx } from 'clsx'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import type { Torrent } from '../types'
@@ -12,6 +15,10 @@ interface DeleteTorrentModalProps {
   onDelete: (_identifier: string) => Promise<void>
 }
 
+interface DeleteForm {
+  confirmText: string
+}
+
 export const DeleteTorrentModal = ({
   torrent,
   walletInfo,
@@ -20,17 +27,26 @@ export const DeleteTorrentModal = ({
   onDelete
 }: DeleteTorrentModalProps) => {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [confirmText, setConfirmText] = useState('')
 
-  const handleDeleteAsync = async () => {
-    if (confirmText !== 'DELETE') {
-      setError('Please type DELETE to confirm')
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset
+  } = useForm<DeleteForm>({
+    defaultValues: { confirmText: '' }
+  })
+
+  const confirmText = watch('confirmText')
+  const isConfirmed = confirmText === 'DELETE'
+
+  const onSubmit = async () => {
+    if (!isConfirmed) {
+      toast.error('Please type DELETE to confirm')
       return
     }
 
     setLoading(true)
-    setError(null)
 
     try {
       const sdk = useSdk()
@@ -45,7 +61,6 @@ export const DeleteTorrentModal = ({
       )
 
       const where = [['$id', '==', torrent.identifier]]
-
       const [document] = await sdk.documents.query(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, where)
 
       if (!document) {
@@ -60,10 +75,13 @@ export const DeleteTorrentModal = ({
 
       await (window as any).dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
 
+      toast.success('Torrent deleted successfully')
+      reset()
       await onDelete(torrent.identifier)
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      const message = err instanceof Error ? err.message : String(err)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -104,25 +122,7 @@ export const DeleteTorrentModal = ({
               </div>
             </div>
 
-            <div className="p-6 space-y-6">
-              {error && (
-                <div className="rounded-lg bg-error-5 dark:bg-error-15 p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-error" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-error">Error</h3>
-                      <div className="mt-2 text-sm text-error-75">
-                        <p>{error}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
+            <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
               <div className="space-y-4">
                 <div className="bg-dash-dark-5 dark:bg-dash-white-5 rounded-lg p-4">
                   <p className="text-sm text-dash-dark-75 dark:text-dash-white-75 mb-2">
@@ -156,10 +156,14 @@ export const DeleteTorrentModal = ({
                   <input
                     type="text"
                     id="confirm-delete"
-                    className="w-full px-4 py-2 border border-dash-dark-15 dark:border-dash-white-15 rounded-lg focus:border-error focus:outline-none dark:bg-dash-space-cadet dark:text-dash-white transition-colors"
-                    onChange={(_e: ChangeEvent<HTMLInputElement>) => setConfirmText(_e.target.value)}
-                    value={confirmText}
+                    className={clsx(
+                      'w-full px-4 py-2 border rounded-lg transition-colors',
+                      'border-dash-dark-15 dark:border-dash-white-15',
+                      'focus:border-error focus:outline-none',
+                      'dark:bg-dash-space-cadet dark:text-dash-white'
+                    )}
                     placeholder="Type DELETE"
+                    {...register('confirmText')}
                   />
                 </div>
               </div>
@@ -174,10 +178,13 @@ export const DeleteTorrentModal = ({
                   Cancel
                 </button>
                 <button
-                  type="button"
-                  onClick={handleDeleteAsync}
-                  className="px-4 py-2 text-sm font-medium text-dash-white bg-error rounded-lg hover:bg-error-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                  disabled={loading || confirmText !== 'DELETE'}
+                  type="submit"
+                  className={clsx(
+                    'px-4 py-2 text-sm font-medium text-dash-white bg-error rounded-lg',
+                    'hover:bg-error-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error',
+                    'transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center'
+                  )}
+                  disabled={loading || !isConfirmed}
                 >
                   {loading ? (
                     <>
@@ -197,7 +204,7 @@ export const DeleteTorrentModal = ({
                   )}
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>
