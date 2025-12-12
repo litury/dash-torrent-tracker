@@ -7,7 +7,7 @@ export const ProfileChip = ({ address }: ProfileChipProps) => {
     return null
   }
 
-  const truncatedAddress = `${address.substring(0, 4)}...${address.substring(address.length - 4)}`
+  const truncatedAddress = `${address.substring(0, 3)}...${address.substring(address.length - 3)}`
 
   return (
     <div
