@@ -17,7 +17,7 @@ const App = () => (
         </Route>
       </Routes>
     </BrowserRouter>
-    <Toaster position="bottom-right" richColors />
+    <Toaster position="top-right" />
   </>
 )
 
