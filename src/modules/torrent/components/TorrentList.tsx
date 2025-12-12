@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useOutletContext } from 'react-router-dom'
-import { FileText, Plus } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
+import { FileText } from 'lucide-react'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import type { Torrent } from '../types'
@@ -16,10 +16,11 @@ interface OutletContext {
   setPageTitle: (title: string | undefined) => void
   setTorrentCount: (count: number | undefined) => void
   ownerFilter: 'all' | 'mine'
+  refreshKey: number
 }
 
 export const TorrentList = () => {
-  const { walletInfo, searchQuery, setPageTitle, setTorrentCount, ownerFilter } = useOutletContext<OutletContext>()
+  const { walletInfo, searchQuery, setPageTitle, setTorrentCount, ownerFilter, refreshKey } = useOutletContext<OutletContext>()
   const [torrents, setTorrents] = useState<Torrent[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,7 +66,7 @@ export const TorrentList = () => {
     }
 
     fetchTorrents()
-  }, [])
+  }, [refreshKey])
 
   const filteredTorrents = torrents
     .filter((_torrent) =>
@@ -114,19 +115,12 @@ export const TorrentList = () => {
           <FileText className="mx-auto h-12 w-12 text-dash-dark-75 dark:text-dash-white-75" />
           <h3 className="mt-2 text-sm font-medium text-dash-dark dark:text-dash-white">No torrents</h3>
           <p className="mt-1 text-sm text-dash-dark-75 dark:text-dash-white-75">
-            {searchQuery ? 'No torrents match your search.' : 'Get started by adding a new torrent.'}
+            {searchQuery
+              ? 'No torrents match your search.'
+              : walletInfo.connected
+                ? 'Click "New Torrent" in the sidebar to add your first torrent.'
+                : 'Connect your wallet to add torrents.'}
           </p>
-          {!searchQuery && walletInfo.connected && (
-            <div className="mt-6">
-              <NavLink
-                to="/add"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-dash-white bg-dash-blue hover:bg-dash-blue-75 transition-colors"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Add your first torrent
-              </NavLink>
-            </div>
-          )}
         </div>
       )}
 

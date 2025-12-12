@@ -1,5 +1,5 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { Plus, LayoutGrid, Clock, TrendingUp, Video, Music, Package, BookOpen, MoreHorizontal } from 'lucide-react'
+import { Plus, LayoutGrid, TrendingUp, Video, Music, Package, BookOpen, MoreHorizontal } from 'lucide-react'
 import { SearchInput } from './SearchInput'
 import { Button } from './Button'
 import dashLogo from '../../assets/dash_logo.svg'
@@ -22,6 +22,7 @@ interface SidebarProps {
   searchQuery: string
   onSearchChange: (_query: string) => void
   isWalletConnected: boolean
+  onAddTorrent: () => void
 }
 
 export const Sidebar = ({
@@ -31,7 +32,8 @@ export const Sidebar = ({
   onCategoryChange,
   searchQuery,
   onSearchChange,
-  isWalletConnected
+  isWalletConnected,
+  onAddTorrent
 }: SidebarProps) => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -95,23 +97,19 @@ export const Sidebar = ({
 
       {/* New Torrent button */}
       <div className="px-3 h-12 flex items-center border-t border-dash-dark-15 dark:border-dash-white-15 w-full">
-        {isWalletConnected ? (
-          <NavLink to="/add" onClick={onClose} className="w-full">
-            <Button size="small" icon={<Plus />} className="w-full">
-              New Torrent
-            </Button>
-          </NavLink>
-        ) : (
-          <Button
-            size="small"
-            icon={<Plus />}
-            disabled
-            className="w-full"
-            title="Connect wallet to add torrents"
-          >
-            New Torrent
-          </Button>
-        )}
+        <Button
+          size="small"
+          icon={<Plus />}
+          className="w-full"
+          disabled={!isWalletConnected}
+          title={!isWalletConnected ? 'Connect wallet to add torrents' : undefined}
+          onClick={() => {
+            onAddTorrent()
+            onClose()
+          }}
+        >
+          New Torrent
+        </Button>
       </div>
     </aside>
   )

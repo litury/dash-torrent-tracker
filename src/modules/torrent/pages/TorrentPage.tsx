@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
-import { ArrowLeft, Copy, Check, ExternalLink } from 'lucide-react'
+import { Copy, Check, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { Button } from '../../../shared/components/Button'
@@ -144,25 +144,17 @@ export const TorrentPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          color="darkBlue"
-          size="small"
-          icon={<ArrowLeft />}
-          onClick={() => navigate('/')}
-        >
-          Back
-        </Button>
-
-        <TorrentActions
-          torrent={torrent}
-          isOwner={isOwner}
-          onEdit={setEditingTorrent}
-          onDelete={setDeletingTorrent}
-        />
-      </div>
+      {/* Actions */}
+      {isOwner && (
+        <div className="flex justify-end">
+          <TorrentActions
+            torrent={torrent}
+            isOwner={isOwner}
+            onEdit={setEditingTorrent}
+            onDelete={setDeletingTorrent}
+          />
+        </div>
+      )}
 
       {/* Main content */}
       <div className="bg-dash-white dark:bg-dash-space-cadet rounded-xl border border-dash-dark-15 dark:border-dash-white-15 overflow-hidden">
