@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
-import { Copy, Check, ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { Copy, Check, ExternalLink, Pencil, Trash2, Clock, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { Button } from '../../../shared/components/Button'
@@ -8,7 +8,6 @@ import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constan
 import type { Torrent } from '../types'
 import type { WalletInfo } from '../../wallet/types'
 import { createTorrent } from '../types'
-import { OwnerIdentity } from '../parts/OwnerIdentity'
 import { DocumentIdenticon } from '../parts/DocumentIdenticon'
 import { MagnetButton } from '../parts/MagnetButton'
 import { UpdateTorrentModal } from '../parts/UpdateTorrentModal'
@@ -112,6 +111,19 @@ export const TorrentPage = () => {
     })
   }
 
+  const formatShortDate = (timestamp: Date): string => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  const formatIdentity = (identity: string): string => {
+    if (identity.length <= 12) return identity
+    return `${identity.slice(0, 6)}...${identity.slice(-4)}`
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -143,99 +155,161 @@ export const TorrentPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Main content */}
+      {/* Main Card */}
       <div className="bg-dash-white dark:bg-dash-space-cadet rounded-xl border border-dash-dark-15 dark:border-dash-white-15 overflow-hidden">
-        {/* Title section */}
-        <div className="p-6 border-b border-dash-dark-15 dark:border-dash-white-15">
-          <div className="flex items-center gap-4">
+        {/* Header: Icon + Title + Actions */}
+        <div className="p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
+          <div className="flex items-start gap-4">
             <DocumentIdenticon documentId={torrent.identifier} size="lg" />
-
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-bold text-dash-dark dark:text-dash-white truncate">
                 {torrent.name}
               </h1>
-            </div>
-
-            {isOwner && (
-              <div className="flex gap-2 flex-shrink-0">
-                <Button
-                  variant="alternative"
-                  color="darkBlue"
-                  size="small"
-                  icon={<Pencil />}
-                  onClick={() => setEditingTorrent(torrent)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="alternative"
-                  color="error"
-                  size="small"
-                  icon={<Trash2 />}
-                  onClick={() => setDeletingTorrent(torrent)}
-                >
-                  Delete
-                </Button>
+              <div className="flex items-center gap-2 mt-2 text-sm text-dash-dark-75 dark:text-dash-white-75 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <User className="w-3.5 h-3.5" />
+                  <span className="font-mono">{formatIdentity(torrent.owner)}</span>
+                  {/* Badge always rendered, invisible when not owner to prevent layout shift */}
+                  <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${
+                    isOwner ? 'bg-dash-blue-15 text-dash-blue' : 'invisible'
+                  }`}>
+                    You
+                  </span>
+                </div>
+                <span className="text-dash-dark-50 dark:text-dash-white-50">•</span>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{formatShortDate(torrent.timestamp)}</span>
+                </div>
               </div>
-            )}
+            </div>
+            {/* Action buttons - always rendered, invisible when not owner to prevent layout shift */}
+            <div className={`flex gap-2 flex-shrink-0 ${!isOwner ? 'invisible' : ''}`}>
+              <Button
+                variant="alternative"
+                color="darkBlue"
+                size="small"
+                icon={<Pencil />}
+                onClick={() => setEditingTorrent(torrent)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="alternative"
+                color="error"
+                size="small"
+                icon={<Trash2 />}
+                onClick={() => setDeletingTorrent(torrent)}
+              >
+                Delete
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Description */}
-        <div className="p-6 border-b border-dash-dark-15 dark:border-dash-white-15">
-          <p className="text-dash-dark-75 dark:text-dash-white-75 whitespace-pre-wrap">
+        <div className="p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
+          <h2 className="text-xs font-medium text-dash-dark-50 dark:text-dash-white-50 uppercase tracking-wide mb-3">
+            Description
+          </h2>
+          <p className="text-sm text-dash-dark dark:text-dash-white whitespace-pre-wrap leading-relaxed">
             {torrent.description}
           </p>
         </div>
 
-        {/* Download button */}
-        <div className="p-6 border-b border-dash-dark-15 dark:border-dash-white-15">
+        {/* Download CTA */}
+        <div className="p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
           <MagnetButton magnet={torrent.magnet} />
         </div>
 
-        {/* Metadata */}
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between py-2 border-b border-dash-dark-5 dark:border-dash-white-5">
-            <span className="text-sm text-dash-dark-75 dark:text-dash-white-75">Owner</span>
-            <OwnerIdentity owner={torrent.owner} isOwner={isOwner} size="sm" />
+        {/* Metadata Grid */}
+        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Document ID */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-dash-dark-50 dark:text-dash-white-50 uppercase tracking-wide">
+              Document ID
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm text-dash-dark dark:text-dash-white">
+                {torrent.identifier.slice(0, 8)}...{torrent.identifier.slice(-4)}
+              </span>
+              <Button
+                variant="ghost"
+                color="darkBlue"
+                size="small"
+                iconOnly
+                icon={copiedId ? <Check className="text-success" /> : <Copy />}
+                onClick={handleCopyId}
+                title="Copy identifier"
+              />
+              <a
+                href={`https://testnet.platform-explorer.com/document/${torrent.identifier}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-lg hover:bg-dash-dark-5 dark:hover:bg-dash-white-15 transition-colors"
+                title="View on Platform Explorer"
+              >
+                <ExternalLink className="w-4 h-4 text-dash-blue" />
+              </a>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between py-2 border-b border-dash-dark-5 dark:border-dash-white-5">
-            <span className="text-sm text-dash-dark-75 dark:text-dash-white-75">Added</span>
+          {/* Owner */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-dash-dark-50 dark:text-dash-white-50 uppercase tracking-wide">
+              Owner
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm text-dash-dark dark:text-dash-white">
+                {formatIdentity(torrent.owner)}
+              </span>
+              <a
+                href={`https://testnet.platform-explorer.com/identity/${torrent.owner}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-lg hover:bg-dash-dark-5 dark:hover:bg-dash-white-15 transition-colors"
+                title="View owner on Platform Explorer"
+              >
+                <ExternalLink className="w-4 h-4 text-dash-blue" />
+              </a>
+            </div>
+          </div>
+
+          {/* Timestamp */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-dash-dark-50 dark:text-dash-white-50 uppercase tracking-wide">
+              Added
+            </span>
             <span className="text-sm text-dash-dark dark:text-dash-white">
               {formatFullDate(torrent.timestamp)}
             </span>
           </div>
 
-          <div className="flex items-center justify-between py-2 border-b border-dash-dark-5 dark:border-dash-white-5">
-            <span className="text-sm text-dash-dark-75 dark:text-dash-white-75">Document ID</span>
-            <Button
-              variant="ghost"
-              color="darkBlue"
-              size="small"
-              icon={copiedId ? <Check className="text-success" /> : <Copy />}
-              iconPosition="right"
-              onClick={handleCopyId}
-              className="font-mono"
-            >
-              {torrent.identifier.slice(0, 8)}...{torrent.identifier.slice(-4)}
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-dash-dark-75 dark:text-dash-white-75">Explorer</span>
+          {/* Platform Explorer */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-dash-dark-50 dark:text-dash-white-50 uppercase tracking-wide">
+              Platform Explorer
+            </span>
             <a
               href={`https://testnet.platform-explorer.com/document/${torrent.identifier}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-dash-blue hover:underline"
+              className="text-sm text-dash-blue hover:underline inline-flex items-center gap-1"
             >
-              View on Platform Explorer
-              <ExternalLink className="w-4 h-4" />
+              View document
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>
       </div>
+
+      {/* Comments Section Placeholder */}
+      {/* TODO: Integrate CommentList module here */}
+      {/*
+      <div className="bg-dash-white dark:bg-dash-space-cadet rounded-xl border border-dash-dark-15 dark:border-dash-white-15 p-6">
+        <CommentList torrentId={torrent.identifier} />
+      </div>
+      */}
 
       {/* Modals */}
       {editingTorrent && (
