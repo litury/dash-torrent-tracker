@@ -77,8 +77,8 @@ export const Layout = () => {
           onMenuClick={() => setSidebarOpen(true)}
           title={displayTitle}
           count={displayCount}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          searchQuery={showFilters ? searchQuery : undefined}
+          onSearchChange={showFilters ? setSearchQuery : undefined}
           showMyTorrents={showFilters ? showMyTorrents : undefined}
           onShowMyTorrentsChange={showFilters ? setShowMyTorrents : undefined}
           viewMode={showFilters ? viewMode : undefined}
