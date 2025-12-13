@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import { Copy, Check, ExternalLink, Pencil, Trash2, Clock, User } from 'lucide-react'
 import { toast } from 'sonner'
+import clsx from 'clsx'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { Button } from '../../../shared/components/Button'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
@@ -157,40 +158,40 @@ export const TorrentPage = () => {
     <div className="space-y-6">
       {/* Main Card */}
       <div className="bg-dash-white dark:bg-dash-space-cadet rounded-xl border border-dash-dark-15 dark:border-dash-white-15 overflow-hidden">
-        {/* Header: Icon + Title + Actions */}
-        <div className="p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
-          <div className="flex items-start gap-4">
+        {/* Header: Icon + Title + Actions - vertical on mobile */}
+        <div className="p-4 sm:p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
             <DocumentIdenticon documentId={torrent.identifier} size="lg" />
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-dash-dark dark:text-dash-white truncate">
+              <h1 className="text-lg sm:text-xl font-bold text-dash-dark dark:text-dash-white break-words">
                 {torrent.name}
               </h1>
-              <div className="flex items-center gap-2 mt-2 text-sm text-dash-dark-75 dark:text-dash-white-75 flex-wrap">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-2 text-sm text-dash-dark-75 dark:text-dash-white-75">
                 <div className="flex items-center gap-1">
-                  <User className="w-3.5 h-3.5" />
-                  <span className="font-mono">{formatIdentity(torrent.owner)}</span>
-                  {/* Badge always rendered, invisible when not owner to prevent layout shift */}
-                  <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${
-                    isOwner ? 'bg-dash-blue-15 text-dash-blue' : 'invisible'
-                  }`}>
-                    You
+                  <User className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className={clsx(
+                    "font-mono",
+                    isOwner ? "text-dash-blue font-medium" : ""
+                  )}>
+                    {isOwner ? "You" : formatIdentity(torrent.owner)}
                   </span>
                 </div>
-                <span className="text-dash-dark-50 dark:text-dash-white-50">•</span>
+                <span className="hidden sm:inline text-dash-dark-50 dark:text-dash-white-50">•</span>
                 <div className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
+                  <Clock className="w-3.5 h-3.5 flex-shrink-0" />
                   <span>{formatShortDate(torrent.timestamp)}</span>
                 </div>
               </div>
             </div>
             {/* Action buttons - always rendered, invisible when not owner to prevent layout shift */}
-            <div className={`flex gap-2 flex-shrink-0 ${!isOwner ? 'invisible' : ''}`}>
+            <div className={`flex gap-2 w-full sm:w-auto sm:flex-shrink-0 ${!isOwner ? 'invisible' : ''}`}>
               <Button
                 variant="alternative"
                 color="darkBlue"
                 size="small"
                 icon={<Pencil />}
                 onClick={() => setEditingTorrent(torrent)}
+                className="flex-1 sm:flex-initial"
               >
                 Edit
               </Button>
@@ -200,6 +201,7 @@ export const TorrentPage = () => {
                 size="small"
                 icon={<Trash2 />}
                 onClick={() => setDeletingTorrent(torrent)}
+                className="flex-1 sm:flex-initial"
               >
                 Delete
               </Button>
@@ -208,22 +210,22 @@ export const TorrentPage = () => {
         </div>
 
         {/* Description */}
-        <div className="p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
+        <div className="p-4 sm:p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
           <h2 className="text-xs font-medium text-dash-dark-50 dark:text-dash-white-50 uppercase tracking-wide mb-3">
             Description
           </h2>
-          <p className="text-sm text-dash-dark dark:text-dash-white whitespace-pre-wrap leading-relaxed">
+          <p className="text-sm text-dash-dark dark:text-dash-white whitespace-pre-wrap leading-relaxed break-words [overflow-wrap:anywhere]">
             {torrent.description}
           </p>
         </div>
 
         {/* Download CTA */}
-        <div className="p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
+        <div className="p-4 sm:p-6 border-b border-dash-dark-5 dark:border-dash-white-5">
           <MagnetButton magnet={torrent.magnet} />
         </div>
 
         {/* Metadata Grid */}
-        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {/* Document ID */}
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-dash-dark-50 dark:text-dash-white-50 uppercase tracking-wide">
@@ -260,8 +262,13 @@ export const TorrentPage = () => {
               Owner
             </span>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-sm text-dash-dark dark:text-dash-white">
-                {formatIdentity(torrent.owner)}
+              <span className={clsx(
+                "font-mono text-sm",
+                isOwner
+                  ? "text-dash-blue font-medium"
+                  : "text-dash-dark dark:text-dash-white"
+              )}>
+                {isOwner ? "You" : formatIdentity(torrent.owner)}
               </span>
               <a
                 href={`https://testnet.platform-explorer.com/identity/${torrent.owner}`}
