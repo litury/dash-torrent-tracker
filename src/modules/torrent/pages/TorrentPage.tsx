@@ -13,6 +13,8 @@ import { DocumentIdenticon } from '../parts/DocumentIdenticon'
 import { MagnetButton } from '../parts/MagnetButton'
 import { UpdateTorrentModal } from '../parts/UpdateTorrentModal'
 import { DeleteTorrentModal } from '../parts/DeleteTorrentModal'
+import { CommentSection } from '../../comment'
+import { TorrentPageSkeleton } from '../parts/TorrentPageSkeleton'
 
 interface OutletContext {
   walletInfo: WalletInfo
@@ -126,15 +128,7 @@ export const TorrentPage = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="relative">
-          <div className="h-12 w-12 rounded-full border-4 border-dash-dark-15 dark:border-dash-white-15" />
-          <div className="absolute top-0 left-0 h-12 w-12 rounded-full border-4 border-t-dash-blue animate-spin" />
-        </div>
-        <p className="mt-4 text-sm text-dash-dark-75 dark:text-dash-white-75">Loading torrent...</p>
-      </div>
-    )
+    return <TorrentPageSkeleton />
   }
 
   if (error || !torrent) {
@@ -310,13 +304,8 @@ export const TorrentPage = () => {
         </div>
       </div>
 
-      {/* Comments Section Placeholder */}
-      {/* TODO: Integrate CommentList module here */}
-      {/*
-      <div className="bg-dash-white dark:bg-dash-space-cadet rounded-xl border border-dash-dark-15 dark:border-dash-white-15 p-6">
-        <CommentList torrentId={torrent.identifier} />
-      </div>
-      */}
+      {/* Comments Section */}
+      <CommentSection torrentId={torrent.identifier} walletInfo={walletInfo} />
 
       {/* Modals */}
       {editingTorrent && (
