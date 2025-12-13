@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { LogOut } from 'lucide-react'
 import { ProfileChip } from '../parts/ProfileChip'
+import { Button } from '../../../shared/components/Button'
 import type { WalletInfo } from '../types'
 import { createWalletInfo, INITIAL_WALLET_INFO } from '../types'
 
@@ -47,23 +48,22 @@ export const ConnectWallet = ({ walletInfo, setWalletInfo }: ConnectWalletProps)
 
   if (walletInfo.connected) {
     return (
-      <div className="relative min-w-[140px]" ref={dropdownRef}>
-        <button
+      <div className="relative" ref={dropdownRef}>
+        <ProfileChip
+          address={walletInfo.currentIdentity}
           onClick={() => setShowDropdown(!showDropdown)}
-          className="focus:outline-none w-full"
-        >
-          <ProfileChip address={walletInfo.currentIdentity} />
-        </button>
+        />
 
         {showDropdown && (
-          <div className="absolute right-0 mt-2 w-40 bg-dash-white dark:bg-dash-space-cadet border border-dash-dark-15 dark:border-dash-white-15 rounded-lg shadow-lg z-10">
-            <button
+          <div className="absolute right-0 mt-2 z-10">
+            <Button
+              color="error"
+              size="small"
+              icon={<LogOut />}
               onClick={handleDisconnect}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-error hover:bg-error-5 dark:hover:bg-error-15 transition-colors rounded-lg"
             >
-              <LogOut className="w-4 h-4" />
               Disconnect
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -71,13 +71,10 @@ export const ConnectWallet = ({ walletInfo, setWalletInfo }: ConnectWalletProps)
   }
 
   return (
-    <div className="flex flex-col items-end min-w-[140px]">
-      <button
-        onClick={handleConnectAsync}
-        className="w-full px-4 py-2 text-sm font-medium rounded-lg text-dash-white bg-dash-blue hover:bg-dash-blue-75 transition-colors"
-      >
+    <div className="flex flex-col items-end">
+      <Button onClick={handleConnectAsync} size="small" className="min-w-[130px]">
         Connect Wallet
-      </button>
+      </Button>
       {error && <span className="mt-1 text-xs text-error">{error}</span>}
     </div>
   )

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useOutletContext } from 'react-router-dom'
-import { FileText, Plus } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
+import { FileText } from 'lucide-react'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import type { Torrent } from '../types'
@@ -8,6 +8,8 @@ import type { WalletInfo } from '../../wallet/types'
 import { createTorrent } from '../types'
 import { TorrentCard } from './TorrentCard'
 import { TorrentCardSkeleton } from './TorrentCardSkeleton'
+import { TorrentListItem } from './TorrentListItem'
+import { TorrentListItemSkeleton } from './TorrentListItemSkeleton'
 
 interface OutletContext {
   walletInfo: WalletInfo
@@ -15,11 +17,14 @@ interface OutletContext {
   searchQuery: string
   setPageTitle: (title: string | undefined) => void
   setTorrentCount: (count: number | undefined) => void
-  ownerFilter: 'all' | 'mine'
+  showMyTorrents: boolean
+  refreshKey: number
+  viewMode: 'grid' | 'list'
+  sortOrder: 'desc' | 'asc'
 }
 
 export const TorrentList = () => {
-  const { walletInfo, searchQuery, setPageTitle, setTorrentCount, ownerFilter } = useOutletContext<OutletContext>()
+  const { walletInfo, searchQuery, setPageTitle, setTorrentCount, showMyTorrents, refreshKey, viewMode, sortOrder } = useOutletContext<OutletContext>()
   const [torrents, setTorrents] = useState<Torrent[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,7 +70,7 @@ export const TorrentList = () => {
     }
 
     fetchTorrents()
-  }, [])
+  }, [refreshKey])
 
   const filteredTorrents = torrents
     .filter((_torrent) =>
@@ -73,39 +78,45 @@ export const TorrentList = () => {
       _torrent.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .filter((_torrent) =>
-      ownerFilter === 'mine'
+      showMyTorrents
         ? _torrent.owner === walletInfo.currentIdentity
         : true
     )
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .sort((a, b) =>
+      sortOrder === 'desc'
+        ? b.timestamp.getTime() - a.timestamp.getTime()  // Новые первыми
+        : a.timestamp.getTime() - b.timestamp.getTime()  // Старые первыми
+    )
 
-  // Update header title and count
+  // Set title immediately (doesn't depend on loading)
   useEffect(() => {
-    if (!loading && !error) {
-      let title = 'All Torrents'
-      if (searchQuery) {
-        title = `Results for "${searchQuery}"`
-      } else if (ownerFilter === 'mine') {
-        title = 'My Torrents'
-      }
-      setPageTitle(title)
-      setTorrentCount(filteredTorrents.length)
-    }
-    return () => {
-      setPageTitle(undefined)
-      setTorrentCount(undefined)
-    }
-  }, [loading, error, searchQuery, ownerFilter, filteredTorrents.length, setPageTitle, setTorrentCount])
+    setPageTitle('All Torrents')
+    return () => setPageTitle(undefined)
+  }, [setPageTitle])
+
+  // Set count only after loading (undefined shows skeleton)
+  useEffect(() => {
+    setTorrentCount(!loading && !error ? filteredTorrents.length : undefined)
+    return () => setTorrentCount(undefined)
+  }, [loading, error, filteredTorrents.length, setTorrentCount])
 
   return (
     <div className="space-y-6">
-      {/* Loading state — skeleton grid */}
+      {/* Loading state — skeleton grid or list */}
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <TorrentCardSkeleton key={i} />
-          ))}
-        </div>
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <TorrentCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <TorrentListItemSkeleton key={i} />
+            ))}
+          </div>
+        )
       )}
 
       {/* Empty state */}
@@ -114,33 +125,38 @@ export const TorrentList = () => {
           <FileText className="mx-auto h-12 w-12 text-dash-dark-75 dark:text-dash-white-75" />
           <h3 className="mt-2 text-sm font-medium text-dash-dark dark:text-dash-white">No torrents</h3>
           <p className="mt-1 text-sm text-dash-dark-75 dark:text-dash-white-75">
-            {searchQuery ? 'No torrents match your search.' : 'Get started by adding a new torrent.'}
+            {searchQuery
+              ? 'No torrents match your search.'
+              : walletInfo.connected
+                ? 'Click "New Torrent" in the sidebar to add your first torrent.'
+                : 'Connect your wallet to add torrents.'}
           </p>
-          {!searchQuery && walletInfo.connected && (
-            <div className="mt-6">
-              <NavLink
-                to="/add"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-dash-white bg-dash-blue hover:bg-dash-blue-75 transition-colors"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Add your first torrent
-              </NavLink>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Grid of cards */}
+      {/* Grid or List of torrents */}
       {!loading && !error && filteredTorrents.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTorrents.map((_torrent) => (
-            <TorrentCard
-              key={_torrent.identifier}
-              torrent={_torrent}
-              walletInfo={walletInfo}
-            />
-          ))}
-        </div>
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTorrents.map((_torrent) => (
+              <TorrentCard
+                key={_torrent.identifier}
+                torrent={_torrent}
+                walletInfo={walletInfo}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {filteredTorrents.map((_torrent) => (
+              <TorrentListItem
+                key={_torrent.identifier}
+                torrent={_torrent}
+                walletInfo={walletInfo}
+              />
+            ))}
+          </div>
+        )
       )}
 
       {/* Error state */}

@@ -1,24 +1,22 @@
-import { useState, useEffect, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { toast } from 'sonner'
-import { RefreshCw } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE } from '../../../config/constants'
 import { useSdk } from '../../../shared/hooks/useSdk'
 import { Modal } from '../../../shared/components/Modal'
 import { Button } from '../../../shared/components/Button'
 import { Input } from '../../../shared/components/Input'
 import { Textarea } from '../../../shared/components/Textarea'
-import type { Torrent } from '../types'
 import type { WalletInfo } from '../../wallet/types'
 
-interface UpdateTorrentModalProps {
-  torrent: Torrent
+interface CreateTorrentModalProps {
   walletInfo: WalletInfo
   isOpen: boolean
   onClose: () => void
-  onUpdate: (_identifier: string) => Promise<void>
+  onCreate: () => Promise<void>
 }
 
-interface UpdateForm {
+interface TorrentForm {
   name: string
   description: string
   magnet: string
@@ -30,7 +28,7 @@ interface FormErrors {
   magnet: string | null
 }
 
-// Validation regex patterns (same as CreateTorrentModal)
+// Validation regex patterns
 const NAME_REGEX = /^.{3,100}$/
 const DESCRIPTION_REGEX = /^[\s\S]{16,1000}$/
 const MAGNET_REGEX = /^magnet:\?xt=urn:btih:[a-zA-Z0-9]{32,40}/
@@ -56,15 +54,14 @@ const validateMagnet = (value: string): string | null => {
   return null
 }
 
-export const UpdateTorrentModal = ({
-  torrent,
+export const CreateTorrentModal = ({
   walletInfo,
   isOpen,
   onClose,
-  onUpdate
-}: UpdateTorrentModalProps) => {
+  onCreate
+}: CreateTorrentModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [form, setForm] = useState<UpdateForm>({
+  const [form, setForm] = useState<TorrentForm>({
     name: '',
     description: '',
     magnet: ''
@@ -75,26 +72,14 @@ export const UpdateTorrentModal = ({
     magnet: null
   })
 
-  // Sync form with torrent data when modal opens
-  useEffect(() => {
-    if (torrent && isOpen) {
-      setForm({
-        name: torrent.name || '',
-        description: torrent.description || '',
-        magnet: torrent.magnet || ''
-      })
-      setFieldErrors({ name: null, description: null, magnet: null })
-    }
-  }, [torrent, isOpen])
-
-  const handleInputChange = (key: keyof UpdateForm, e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (key: keyof TorrentForm, e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [key]: e.target.value })
     if (fieldErrors[key]) {
       setFieldErrors({ ...fieldErrors, [key]: null })
     }
   }
 
-  const handleBlur = (key: keyof UpdateForm) => {
+  const handleBlur = (key: keyof TorrentForm) => {
     let error: string | null = null
     switch (key) {
       case 'name':
@@ -120,6 +105,16 @@ export const UpdateTorrentModal = ({
     return !errors.name && !errors.description && !errors.magnet
   }
 
+  const resetForm = () => {
+    setForm({ name: '', description: '', magnet: '' })
+    setFieldErrors({ name: null, description: null, magnet: null })
+  }
+
+  const handleClose = () => {
+    resetForm()
+    onClose()
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -131,39 +126,50 @@ export const UpdateTorrentModal = ({
 
     try {
       const sdk = useSdk()
+      const dashPlatformExtension = (window as any).dashPlatformExtension
 
-      if (!walletInfo.currentIdentity) {
+      if (!dashPlatformExtension || !walletInfo.currentIdentity) {
         throw new Error('Wallet not connected')
       }
 
-      const identityContractNonce = await sdk.identities.getIdentityContractNonce(
-        walletInfo.currentIdentity,
-        DATA_CONTRACT_IDENTIFIER
-      )
+      let identityContractNonce: bigint
 
-      const where = [['$id', '==', torrent.identifier]]
-      const [document] = await sdk.documents.query(DATA_CONTRACT_IDENTIFIER, DOCUMENT_TYPE, where)
-
-      if (!document) {
-        throw new Error(`Could not fetch torrent with identifier ${torrent.identifier}`)
+      try {
+        identityContractNonce = await sdk.identities.getIdentityContractNonce(
+          walletInfo.currentIdentity,
+          DATA_CONTRACT_IDENTIFIER
+        )
+      } catch (e) {
+        if (String(e).startsWith('Error: Could not get identityContractNonce')) {
+          identityContractNonce = 0n
+        } else {
+          throw e
+        }
       }
 
-      document.properties = {
+      const data = {
         name: form.name,
         description: form.description,
         magnet: form.magnet
       }
 
-      const stateTransition = await sdk.documents.createStateTransition(
-        document,
-        'replace',
-        { identityContractNonce: identityContractNonce + 1n }
+      const document = await sdk.documents.create(
+        DATA_CONTRACT_IDENTIFIER,
+        DOCUMENT_TYPE,
+        data,
+        walletInfo.currentIdentity,
+        identityContractNonce + 1n
       )
 
-      await (window as any).dashPlatformExtension?.signer.signAndBroadcast(stateTransition)
+      const stateTransition = await sdk.documents.createStateTransition(document, 'create', {
+        identityContractNonce: identityContractNonce + 1n
+      })
 
-      toast.success('Torrent updated successfully')
-      await onUpdate(torrent.identifier)
+      await dashPlatformExtension.signer.signAndBroadcast(stateTransition)
+
+      toast.success('Torrent created successfully')
+      resetForm()
+      await onCreate()
       onClose()
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e)
@@ -174,69 +180,62 @@ export const UpdateTorrentModal = ({
     }
   }
 
-  const hasErrors = fieldErrors.name || fieldErrors.description || fieldErrors.magnet
   const isFormValid = form.name && form.description && form.magnet &&
     !fieldErrors.name && !fieldErrors.description && !fieldErrors.magnet
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
-      title="Update Torrent"
-      description={`Update the torrent information for ID: ${torrent?.identifier.substring(0, 8)}...`}
+      onClose={handleClose}
+      title="Add New Torrent"
+      description="Share your torrent on the decentralized Dash Platform"
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Errors summary at top - prevents layout shift */}
-        {hasErrors && (
-          <div className="p-3 rounded-lg bg-error/10 border border-error/20 space-y-1">
-            {fieldErrors.name && <p className="text-sm text-error">{fieldErrors.name}</p>}
-            {fieldErrors.description && <p className="text-sm text-error">{fieldErrors.description}</p>}
-            {fieldErrors.magnet && <p className="text-sm text-error">{fieldErrors.magnet}</p>}
-          </div>
-        )}
-
         <div>
-          <label htmlFor="update-name" className="block text-sm font-medium text-dash-dark dark:text-dash-white mb-2">
+          <label htmlFor="create-name" className="block text-sm font-medium text-dash-dark dark:text-dash-white mb-2">
             Name <span className="text-error">*</span>
           </label>
           <Input
-            id="update-name"
+            id="create-name"
             variant="bordered"
             placeholder="Enter torrent name"
             value={form.name}
             onChange={(e) => handleInputChange('name', e)}
             onBlur={() => handleBlur('name')}
+            error={fieldErrors.name || undefined}
           />
         </div>
 
         <div>
-          <label htmlFor="update-description" className="block text-sm font-medium text-dash-dark dark:text-dash-white mb-2">
+          <label htmlFor="create-description" className="block text-sm font-medium text-dash-dark dark:text-dash-white mb-2">
             Description <span className="text-error">*</span>
           </label>
           <Textarea
-            id="update-description"
+            id="create-description"
             rows={3}
             variant="bordered"
             placeholder="Describe your torrent content"
             value={form.description}
             onChange={(e) => handleInputChange('description', e)}
             onBlur={() => handleBlur('description')}
+            error={fieldErrors.description || undefined}
           />
         </div>
 
         <div>
-          <label htmlFor="update-magnet" className="block text-sm font-medium text-dash-dark dark:text-dash-white mb-2">
+          <label htmlFor="create-magnet" className="block text-sm font-medium text-dash-dark dark:text-dash-white mb-2">
             Magnet Link <span className="text-error">*</span>
           </label>
           <Input
-            id="update-magnet"
+            id="create-magnet"
             variant="bordered"
             placeholder="magnet:?xt=urn:btih:...."
             className="font-mono"
             value={form.magnet}
             onChange={(e) => handleInputChange('magnet', e)}
             onBlur={() => handleBlur('magnet')}
+            error={fieldErrors.magnet || undefined}
           />
         </div>
 
@@ -246,7 +245,7 @@ export const UpdateTorrentModal = ({
             variant="alternative"
             color="darkBlue"
             size="small"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isSubmitting}
           >
             Cancel
@@ -254,11 +253,11 @@ export const UpdateTorrentModal = ({
           <Button
             type="submit"
             size="small"
-            icon={<RefreshCw />}
+            icon={<Plus />}
             loading={isSubmitting}
             disabled={!isFormValid}
           >
-            {isSubmitting ? 'Updating...' : 'Update Torrent'}
+            {isSubmitting ? 'Creating...' : 'Create Torrent'}
           </Button>
         </div>
       </form>

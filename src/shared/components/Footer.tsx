@@ -37,8 +37,8 @@ export const Footer = () => {
   }
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 lg:left-64 bg-dash-white dark:bg-dash-dark border-t border-dash-dark-15 dark:border-dash-white-15 px-4 lg:px-8 py-4 z-40">
-      <div className="flex items-center justify-between text-dash-dark-75 dark:text-dash-white-75">
+    <footer className="bg-dash-white dark:bg-dash-dark border-t border-dash-dark-15 dark:border-dash-white-15 px-4 lg:px-8 h-12 flex items-center">
+      <div className="flex items-center justify-between text-dash-dark-75 dark:text-dash-white-75 w-full">
         {/* Left: Network + Copyright */}
         <div className="text-xs font-mono hidden sm:flex sm:items-center sm:gap-2">
           <span className={`font-medium ${

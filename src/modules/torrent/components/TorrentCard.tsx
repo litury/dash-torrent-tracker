@@ -36,18 +36,9 @@ export const TorrentCard = ({ torrent, walletInfo }: TorrentCardProps) => {
         "relative flex flex-col h-full p-4 rounded-xl cursor-pointer transition-colors",
         "bg-dash-white dark:bg-dash-space-cadet",
         "border border-dash-dark-15 dark:border-dash-white-15",
-        "hover:border-dash-blue dark:hover:border-dash-blue",
-        "ring-2",
-        isOwner ? "ring-dash-blue-15" : "ring-transparent"
+        "hover:border-dash-blue dark:hover:border-dash-blue"
       )}
     >
-      {/* Owner badge — absolute, не влияет на layout */}
-      {isOwner && (
-        <span className="absolute top-3 right-3 px-1.5 py-0.5 bg-dash-blue-15 text-dash-blue text-xs font-medium rounded">
-          You
-        </span>
-      )}
-
       {/* Identicon — по центру */}
       <div className="flex justify-center mb-3">
         <DocumentIdenticon documentId={torrent.identifier} size="sm" />
@@ -63,9 +54,17 @@ export const TorrentCard = ({ torrent, walletInfo }: TorrentCardProps) => {
         </p>
       </div>
 
-      {/* Footer: Date — справа внизу */}
-      <div className="mt-auto pt-4 flex justify-end text-xs text-dash-dark-75 dark:text-dash-white-75">
-        <time>{formatDate(torrent.timestamp)}</time>
+      {/* Footer: Owner (left) + Date (right) */}
+      <div className="mt-auto pt-4 flex items-center justify-between">
+        <span className={clsx(
+          "text-xs font-mono",
+          isOwner ? "text-dash-blue font-medium" : "text-dash-dark-75 dark:text-dash-white-75"
+        )}>
+          {isOwner ? "You" : `${torrent.owner.slice(0, 3)}...${torrent.owner.slice(-3)}`}
+        </span>
+        <time className="text-xs font-mono text-dash-dark-75 dark:text-dash-white-75">
+          {formatDate(torrent.timestamp)}
+        </time>
       </div>
     </article>
   )

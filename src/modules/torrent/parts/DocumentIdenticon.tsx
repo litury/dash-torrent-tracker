@@ -5,10 +5,11 @@ import clsx from 'clsx'
 
 interface DocumentIdenticonProps {
   documentId: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 
 const sizeMap = {
+  xs: 20,
   sm: 32,
   md: 48,
   lg: 64
