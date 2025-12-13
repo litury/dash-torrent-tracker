@@ -46,11 +46,106 @@ export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, s
 
   const toggleTheme = () => setIsDark(!isDark)
 
+  const hasFilters = onViewModeChange || onSearchChange
+
+  // Filter controls - reused in both desktop and mobile
+  const FilterControls = () => (
+    <>
+      {/* View mode toggle */}
+      {onViewModeChange && (
+        <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
+          <button
+            onClick={() => onViewModeChange('grid')}
+            className={`p-1.5 rounded transition-colors ${
+              viewMode === 'grid'
+                ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
+                : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
+            }`}
+            aria-label="Grid view"
+            title="Grid view"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onViewModeChange('list')}
+            className={`p-1.5 rounded transition-colors ${
+              viewMode === 'list'
+                ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
+                : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
+            }`}
+            aria-label="List view"
+            title="List view"
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* My Torrents filter button */}
+      {walletInfo.connected && onShowMyTorrentsChange !== undefined && (
+        <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
+          <button
+            onClick={() => onShowMyTorrentsChange(!showMyTorrents)}
+            className={`p-1.5 rounded transition-colors ${
+              showMyTorrents
+                ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
+                : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
+            }`}
+            aria-label="Show my torrents"
+            title="My torrents"
+          >
+            <User className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Sort order toggle */}
+      {onSortOrderChange && (
+        <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
+          <button
+            onClick={() => onSortOrderChange(sortOrder === 'desc' ? 'asc' : 'desc')}
+            className="p-1.5 rounded transition-colors text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white"
+            aria-label={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
+            title={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
+          >
+            {sortOrder === 'desc' ? <ArrowDown className="w-4 h-4" /> : <ArrowUp className="w-4 h-4" />}
+          </button>
+        </div>
+      )}
+    </>
+  )
+
+  // Search button/input - reused in both desktop and mobile
+  const SearchControl = () => (
+    <>
+      {onSearchChange && (
+        searchExpanded ? (
+          <SearchInput
+            value={searchQuery || ''}
+            onChange={onSearchChange}
+            placeholder="Search torrents..."
+            onClose={() => setSearchExpanded(false)}
+          />
+        ) : (
+          <button
+            onClick={() => setSearchExpanded(true)}
+            className="p-1.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15 hover:bg-dash-dark-15 dark:hover:bg-dash-white-25 transition-colors text-dash-dark dark:text-dash-white"
+            aria-label="Search torrents"
+            title="Search"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+        )
+      )}
+    </>
+  )
+
   return (
     <header className="bg-dash-white dark:bg-dash-dark border-b border-dash-dark-15 dark:border-dash-white-15">
+      {/* Row 1: Always visible - Menu + Title | Theme + Wallet */}
       <div className="px-4 sm:px-6 lg:px-8 h-12 flex items-center">
         <div className="flex items-center justify-between w-full">
-          {/* Left side: Menu + Title + View Mode + My Filter */}
+          {/* Left side: Menu + Title */}
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -76,91 +171,19 @@ export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, s
               </h1>
             )}
 
-            {/* View mode toggle */}
-            {onViewModeChange && (
-              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
-                <button
-                  onClick={() => onViewModeChange('grid')}
-                  className={`p-1.5 rounded transition-colors ${
-                    viewMode === 'grid'
-                      ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
-                      : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
-                  }`}
-                  aria-label="Grid view"
-                  title="Grid view"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => onViewModeChange('list')}
-                  className={`p-1.5 rounded transition-colors ${
-                    viewMode === 'list'
-                      ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
-                      : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
-                  }`}
-                  aria-label="List view"
-                  title="List view"
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* My Torrents filter button */}
-            {walletInfo.connected && onShowMyTorrentsChange !== undefined && (
-              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
-                <button
-                  onClick={() => onShowMyTorrentsChange(!showMyTorrents)}
-                  className={`p-1.5 rounded transition-colors ${
-                    showMyTorrents
-                      ? 'bg-dash-white dark:bg-dash-dark text-dash-blue'
-                      : 'text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white'
-                  }`}
-                  aria-label="Show my torrents"
-                  title="My torrents"
-                >
-                  <User className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* Sort order toggle */}
-            {onSortOrderChange && (
-              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15">
-                <button
-                  onClick={() => onSortOrderChange(sortOrder === 'desc' ? 'asc' : 'desc')}
-                  className="p-1.5 rounded transition-colors text-dash-dark-75 dark:text-dash-white-75 hover:text-dash-dark dark:hover:text-dash-white"
-                  aria-label={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
-                  title={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
-                >
-                  {sortOrder === 'desc' ? <ArrowDown className="w-4 h-4" /> : <ArrowUp className="w-4 h-4" />}
-                </button>
-              </div>
-            )}
+            {/* Desktop only: Filters inline */}
+            <div className="hidden sm:flex items-center gap-1 ml-2">
+              <FilterControls />
+            </div>
           </div>
 
-          {/* Right side: Search + Theme + Wallet */}
+          {/* Right side: Search (desktop) + Theme + Wallet */}
           <div className="flex items-center gap-1">
-            {/* Search - expandable (expands to the left) */}
-            {onSearchChange && (
-              searchExpanded ? (
-                <SearchInput
-                  value={searchQuery || ''}
-                  onChange={onSearchChange}
-                  placeholder="Search torrents..."
-                  onClose={() => setSearchExpanded(false)}
-                />
-              ) : (
-                <button
-                  onClick={() => setSearchExpanded(true)}
-                  className="p-1.5 rounded-lg bg-dash-dark-5 dark:bg-dash-white-15 hover:bg-dash-dark-15 dark:hover:bg-dash-white-25 transition-colors text-dash-dark dark:text-dash-white"
-                  aria-label="Search torrents"
-                  title="Search"
-                >
-                  <Search className="w-4 h-4" />
-                </button>
-              )
-            )}
+            {/* Desktop only: Search */}
+            <div className="hidden sm:block">
+              <SearchControl />
+            </div>
+
             <Button
               variant="ghost"
               color="darkBlue"
@@ -175,6 +198,16 @@ export const Header = ({ walletInfo, setWalletInfo, onMenuClick, title, count, s
           </div>
         </div>
       </div>
+
+      {/* Row 2: Mobile only - Filters + Search */}
+      {hasFilters && (
+        <div className="sm:hidden px-4 h-10 flex items-center justify-between border-t border-dash-dark-5 dark:border-dash-white-5">
+          <div className="flex items-center gap-1">
+            <FilterControls />
+          </div>
+          <SearchControl />
+        </div>
+      )}
     </header>
   )
 }
