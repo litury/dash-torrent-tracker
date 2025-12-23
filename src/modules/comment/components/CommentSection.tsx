@@ -86,7 +86,7 @@ export const CommentSection = ({ torrentId, walletInfo }: CommentSectionProps) =
         }
       }
 
-      const torrentIdBytes = sdk.utils.base58ToBytes(torrentId)
+      const torrentIdBytes = Array.from(sdk.utils.base58ToBytes(torrentId))
       const data = {
         torrentId: torrentIdBytes,
         text
