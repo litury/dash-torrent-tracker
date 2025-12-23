@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { MessageSquare } from 'lucide-react'
 import { toast } from 'sonner'
+import { useSdk } from '../../../shared/hooks/useSdk'
+import { DATA_CONTRACT_IDENTIFIER, COMMENT_DOCUMENT_TYPE } from '../../../config/constants'
 import type { WalletInfo } from '../../wallet/types'
 import type { Comment } from '../types'
-import { USE_MOCK, MOCK_COMMENTS } from '../types'
 import { CommentItem } from '../parts/CommentItem'
 import { CommentForm } from '../parts/CommentForm'
 
@@ -16,66 +17,151 @@ export const CommentSection = ({ torrentId, walletInfo }: CommentSectionProps) =
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      setLoading(true)
-      try {
-        if (USE_MOCK) {
-          // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 500))
-          // Filter mock comments by torrentId (in real app, this would be done by SDK query)
-          setComments(MOCK_COMMENTS.map(c => ({ ...c, torrentId })))
-        } else {
-          // TODO: Fetch real comments from SDK
-          // const sdk = useSdk()
-          // const where = [['torrentId', '==', torrentId]]
-          // const documents = await sdk.documents.query(DATA_CONTRACT_IDENTIFIER, 'comment', where)
-          // setComments(documents.map(doc => ...))
-          setComments([])
-        }
-      } catch (err) {
-        console.error('Failed to fetch comments:', err)
-        toast.error('Failed to load comments')
-      } finally {
-        setLoading(false)
-      }
-    }
+  const fetchComments = async () => {
+    setLoading(true)
+    try {
+      const sdk = useSdk()
+      // SDK doesn't support byteArray queries, load all and filter on client
+      const documents = await sdk.documents.query(
+        DATA_CONTRACT_IDENTIFIER,
+        COMMENT_DOCUMENT_TYPE,
+        undefined,
+        undefined,
+        100
+      )
 
+      const mappedComments: Comment[] = documents
+        .filter((doc) => {
+          const properties = doc.properties as { torrentId: string | string[] }
+          const docTorrentId = Array.isArray(properties.torrentId)
+            ? properties.torrentId.join('')
+            : properties.torrentId
+          return docTorrentId === torrentId
+        })
+        .map((doc) => {
+          const properties = doc.properties as { text: string }
+          return {
+            id: doc.id.base58(),
+            torrentId,
+            text: properties.text,
+            owner: doc.ownerId.base58(),
+            createdAt: new Date(parseInt(doc.createdAt?.toString() ?? '0'))
+          }
+        })
+
+      setComments(mappedComments)
+    } catch (err) {
+      console.error('Failed to fetch comments:', err)
+      toast.error('Failed to load comments')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchComments()
   }, [torrentId])
 
   const handleAddComment = async (text: string) => {
-    if (USE_MOCK) {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500))
-      const newComment: Comment = {
-        id: `mock-${Date.now()}`,
-        torrentId,
-        text,
-        owner: walletInfo.currentIdentity || 'unknown',
-        createdAt: new Date()
+    try {
+      const sdk = useSdk()
+      const dashPlatformExtension = (window as any).dashPlatformExtension
+
+      if (!dashPlatformExtension || !walletInfo.currentIdentity) {
+        throw new Error('Wallet not connected')
       }
-      setComments(prev => [newComment, ...prev])
+
+      let identityContractNonce: bigint
+
+      try {
+        identityContractNonce = await sdk.identities.getIdentityContractNonce(
+          walletInfo.currentIdentity,
+          DATA_CONTRACT_IDENTIFIER
+        )
+      } catch (e) {
+        if (String(e).startsWith('Error: Could not get identityContractNonce')) {
+          identityContractNonce = 0n
+        } else {
+          throw e
+        }
+      }
+
+      const torrentIdBytes = sdk.utils.base58ToBytes(torrentId)
+      const data = {
+        torrentId: torrentIdBytes,
+        text
+      }
+
+      const document = await sdk.documents.create(
+        DATA_CONTRACT_IDENTIFIER,
+        COMMENT_DOCUMENT_TYPE,
+        data,
+        walletInfo.currentIdentity,
+        identityContractNonce + 1n
+      )
+
+      const stateTransition = await sdk.documents.createStateTransition(document, 'create', {
+        identityContractNonce: identityContractNonce + 1n
+      })
+
+      await dashPlatformExtension.signer.signAndBroadcast(stateTransition)
+
       toast.success('Comment added!')
-    } else {
-      // TODO: Create real comment via SDK
-      // const sdk = useSdk()
-      // await sdk.documents.create(DATA_CONTRACT_IDENTIFIER, 'comment', { torrentId, text })
-      toast.info('Comments are not yet available')
+      await fetchComments()
+    } catch (err) {
+      console.error('Failed to add comment:', err)
+      const message = err instanceof Error ? err.message : String(err)
+      toast.error(message)
     }
   }
 
   const handleDeleteComment = async (commentId: string) => {
-    if (USE_MOCK) {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 300))
-      setComments(prev => prev.filter(c => c.id !== commentId))
+    try {
+      const sdk = useSdk()
+      const dashPlatformExtension = (window as any).dashPlatformExtension
+
+      if (!dashPlatformExtension || !walletInfo.currentIdentity) {
+        throw new Error('Wallet not connected')
+      }
+
+      let identityContractNonce: bigint
+
+      try {
+        identityContractNonce = await sdk.identities.getIdentityContractNonce(
+          walletInfo.currentIdentity,
+          DATA_CONTRACT_IDENTIFIER
+        )
+      } catch (e) {
+        if (String(e).startsWith('Error: Could not get identityContractNonce')) {
+          identityContractNonce = 0n
+        } else {
+          throw e
+        }
+      }
+
+      const where = [['$id', '==', commentId]]
+      const [document] = await sdk.documents.query(
+        DATA_CONTRACT_IDENTIFIER,
+        COMMENT_DOCUMENT_TYPE,
+        where
+      )
+
+      if (!document) {
+        throw new Error('Comment not found')
+      }
+
+      const stateTransition = await sdk.documents.createStateTransition(document, 'delete', {
+        identityContractNonce: identityContractNonce + 1n
+      })
+
+      await dashPlatformExtension.signer.signAndBroadcast(stateTransition)
+
       toast.success('Comment deleted')
-    } else {
-      // TODO: Delete real comment via SDK
-      // const sdk = useSdk()
-      // await sdk.documents.delete(DATA_CONTRACT_IDENTIFIER, 'comment', commentId)
-      toast.info('Comments are not yet available')
+      await fetchComments()
+    } catch (err) {
+      console.error('Failed to delete comment:', err)
+      const message = err instanceof Error ? err.message : String(err)
+      toast.error(message)
     }
   }
 
