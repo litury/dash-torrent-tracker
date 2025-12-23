@@ -35,16 +35,23 @@ Output in `dist/`
 
 ## Data Contract
 
-Torrents are stored using this schema on Dash Platform testnet:
+Data is stored on Dash Platform testnet:
 
 ```
-Contract ID: 6hVQW16jyvZyGSQk2YVty4ND6bgFXozizYWnPt753uW5
+Contract ID: 7tyexVc1ivSzep11v486bmUwTgMymUKvQxFeNEBtFVdN
+Explorer: https://testnet.platform-explorer.com/dataContract/7tyexVc1ivSzep11v486bmUwTgMymUKvQxFeNEBtFVdN
 ```
 
-Each torrent document contains:
+### Document Types
+
+**torrent**
 - `name` — torrent name (6-160 chars)
-- `description` — description (16-160 chars)
+- `description` — description (16-4000 chars)
 - `magnet` — magnet link (16-1000 chars)
+
+**comment**
+- `torrentId` — reference to torrent document (32-byte identifier)
+- `text` — comment text (1-1000 chars)
 
 ## License
 
