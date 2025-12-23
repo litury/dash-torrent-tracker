@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "ownerId": "Hrp6J2aUjNeTUcUdL9jyL8kjyVKKDkAGV7pz66DtwA6N",
+  "id": "7tyexVc1ivSzep11v486bmUwTgMymUKvQxFeNEBtFVdN",
+  "$format_version": "0",
+  "documentSchemas": {
+    "torrent": {
+      "type": "object",
+      "properties": {
+        "magnet": {
+          "position": 0,
+          "type": "string",
+          "description": "Magnet links used in BitTorrent protocol",
+          "minLength": 16,
+          "maxLength": 1000
+        },
+        "name": {
+          "position": 1,
+          "type": "string",
+          "description": "Name of the distributed torrent",
+          "minLength": 6,
+          "maxLength": 160
+        },
+        "description": {
+          "position": 2,
+          "type": "string",
+          "description": "Description for a given torrent file",
+          "minLength": 16,
+          "maxLength": 4000
+        }
+      },
+      "required": ["$createdAt", "$updatedAt"],
+      "additionalProperties": false
+    },
+    "comment": {
+      "type": "object",
+      "properties": {
+        "torrentId": {
+          "type": "array",
+          "position": 0,
+          "byteArray": true,
+          "minItems": 32,
+          "maxItems": 32,
+          "description": "Reference to torrent document ID",
+          "contentMediaType": "application/x.dash.dpp.identifier"
+        },
+        "text": {
+          "position": 1,
+          "type": "string",
+          "description": "Comment text",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      },
+      "required": ["$createdAt", "torrentId", "text"],
+      "additionalProperties": false,
+      "indices": [
+        { "name": "byTorrent", "properties": [{ "torrentId": "asc" }] }
+      ]
+    }
+  }
+}
