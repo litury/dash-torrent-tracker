@@ -48,6 +48,7 @@ export const CommentSection = ({ torrentId, walletInfo }: CommentSectionProps) =
             createdAt: new Date(parseInt(doc.createdAt?.toString() ?? '0'))
           }
         })
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
       setComments(mappedComments)
     } catch (err) {
@@ -86,7 +87,7 @@ export const CommentSection = ({ torrentId, walletInfo }: CommentSectionProps) =
         }
       }
 
-      const torrentIdBytes = sdk.utils.base58ToBytes(torrentId)
+      const torrentIdBytes = Array.from(sdk.utils.base58ToBytes(torrentId))
       const data = {
         torrentId: torrentIdBytes,
         text
@@ -107,7 +108,8 @@ export const CommentSection = ({ torrentId, walletInfo }: CommentSectionProps) =
       await dashPlatformExtension.signer.signAndBroadcast(stateTransition)
 
       toast.success('Comment added!')
-      await fetchComments()
+      // Refetch after delay (blockchain needs time to sync)
+      setTimeout(() => fetchComments(), 1000)
     } catch (err) {
       console.error('Failed to add comment:', err)
       const message = err instanceof Error ? err.message : String(err)
@@ -156,8 +158,9 @@ export const CommentSection = ({ torrentId, walletInfo }: CommentSectionProps) =
 
       await dashPlatformExtension.signer.signAndBroadcast(stateTransition)
 
+      // Remove from UI immediately after successful broadcast
+      setComments(prev => prev.filter(c => c.id !== commentId))
       toast.success('Comment deleted')
-      await fetchComments()
     } catch (err) {
       console.error('Failed to delete comment:', err)
       const message = err instanceof Error ? err.message : String(err)
